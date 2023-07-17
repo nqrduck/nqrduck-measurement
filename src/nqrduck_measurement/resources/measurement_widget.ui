@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -21,9 +21,57 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="settingsLayout" stretch="0,0,0,0,0">
+       <item>
+        <widget class="QLabel" name="titleLable">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Single Frequency Measurement: </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="spectrometerLayout">
+         <item>
+          <widget class="QLabel" name="spectrometerLabel">
+           <property name="text">
+            <string>Spectrometer:</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Target Frequency</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lineEdit_2"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Averages</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEdit"/>
+         </item>
+        </layout>
+       </item>
        <item>
         <widget class="QPushButton" name="buttonStart">
          <property name="text">
@@ -32,18 +80,31 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelSpectrometer">
-         <property name="text">
-          <string>Spectrometer:</string>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="plotterLayout" stretch="0">
        <item>
-        <widget class="MplWidget" name="plotter" native="true"/>
+        <widget class="MplWidget" name="plotter" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -55,7 +116,7 @@
   <customwidget>
    <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header>contrib/mplwidget.h</header>
+   <header>nqrduck/contrib/mplwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
