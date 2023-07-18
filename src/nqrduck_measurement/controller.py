@@ -36,3 +36,4 @@ class MeasurementController(ModuleController):
         elif key == "measurement_error" and self.module.view.measurement_dialog.isVisible():
             logger.debug("Received measurement error.")
             self.module.view.measurement_dialog.hide()
+            self.module.nqrduck_signal.emit("notification", ["Error", "Error during measurement."])
