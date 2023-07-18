@@ -32,3 +32,7 @@ class MeasurementController(ModuleController):
             self.module.model.displayed_measurement = value
             self.module.model.add_measurement(value)
             self.module.view.measurement_dialog.hide()
+
+        elif key == "measurement_error" and self.module.view.measurement_dialog.isVisible():
+            logger.debug("Received measurement error.")
+            self.module.view.measurement_dialog.hide()

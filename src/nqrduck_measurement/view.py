@@ -64,6 +64,7 @@ class MeasurementView(ModuleView):
             
     def change_to_time_view(self):
         plotter = self._ui_form.plotter
+        self._ui_form.fftButton.setText("FFT")
         plotter.canvas.ax.clear()
         plotter.canvas.ax.set_xlabel("Time (µs)")
         plotter.canvas.ax.set_ylabel("Amplitude (a.u.)")
@@ -72,6 +73,7 @@ class MeasurementView(ModuleView):
 
     def change_to_fft_view(self):
         plotter = self._ui_form.plotter
+        self._ui_form.fftButton.setText("iFFT")
         plotter.canvas.ax.clear()
         plotter.canvas.ax.set_xlabel("Frequency (MHz)")
         plotter.canvas.ax.set_ylabel("Amplitude (a.u.)")
