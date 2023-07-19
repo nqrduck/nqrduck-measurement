@@ -52,6 +52,15 @@ class MeasurementView(ModuleView):
         self._ui_form.buttonStart.clicked.connect(self.on_measurement_start_button_clicked)
         self._ui_form.fftButton.clicked.connect(self.module.controller.change_view_mode)
 
+        self._ui_form.frequencyEdit.editingFinished.connect(lambda: self.on_editing_finished(self._ui_form.frequencyEdit.text()))
+        self._ui_form.averagesEdit.editingFinished.connect(lambda: self.on_editing_finished(self._ui_form.averagesEdit.text()))
+
+        self.module.controller.set_frequency_failure.connect(self.on_set_frequency_failure)
+        self.module.controller.set_averages_failure.connect(self.on_set_averages_failure)
+
+        # Call validator for buttonStart
+        
+
     def init_plotter(self):
         plotter = self._ui_form.plotter
         plotter.canvas.ax.clear()
@@ -104,6 +113,27 @@ class MeasurementView(ModuleView):
     def on_measurement_start_button_clicked(self):
         logger.debug("Measurement start button clicked.")
         self.module.controller.start_measurement()
+
+    @pyqtSlot(str)
+    def on_editing_finished(self, value):
+        logger.debug("Editing finished.")
+        self.sender().setStyleSheet("")
+        if self.sender() == self._ui_form.frequencyEdit:
+            self.module.controller.set_frequency(value)
+        elif self.sender() == self._ui_form.averagesEdit:
+            self.module.controller.set_averages(value)
+
+    @pyqtSlot()
+    def on_set_frequency_failure(self):
+        """Slot for when the set frequency signal fails."""
+        logger.debug("Set frequency failure.")
+        self._ui_form.frequencyEdit.setStyleSheet("border: 1px solid red;")
+
+    @pyqtSlot()
+    def on_set_averages_failure(self):
+        """Slot for when the set averages signal fails."""
+        logger.debug("Set averages failure.")
+        self._ui_form.averagesEdit.setStyleSheet("border: 1px solid red;")
 
     class MeasurementDialog(QDialog):
         def __init__(self):
