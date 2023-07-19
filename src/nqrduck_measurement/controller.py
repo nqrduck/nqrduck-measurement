@@ -16,8 +16,11 @@ class MeasurementController(ModuleController):
 
     @pyqtSlot(str)
     def set_frequency(self, value):
-        logger.debug("Setting frequency to: " + value)
-        self.module.nqrduck_signal.emit("set_frequency", value)
+        try:
+            logger.debug("Setting frequency to: %s MHz" % value)
+            self.module.nqrduck_signal.emit("set_frequency", float(value) * 1e6)
+        except ValueError:
+            self.set_averages_failure.emit()
 
     @pyqtSlot(str)
     def set_averages(self, value):
