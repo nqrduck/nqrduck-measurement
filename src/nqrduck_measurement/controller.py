@@ -53,10 +53,10 @@ class MeasurementController(ModuleController):
             self.module.view.measurement_dialog.hide()
             self.module.nqrduck_signal.emit("notification", ["Error", "Error during measurement."])
 
-        elif key == "failure" and value[0] == "set_frequency" and self.module.view._ui_form.frequencyEdit.text() == value[1]:
+        elif key == "failure_set_frequency" and self.module.view._ui_form.frequencyEdit.text() == value:
             logger.debug("Received set frequency failure.")
             self.set_frequency_failure.emit()
 
-        elif key == "failure" and value[0] == "set_averages" and self.module.view._ui_form.averagesEdit.text() == value[1]:
+        elif key == "failure_set_averages" and self.module.view._ui_form.averagesEdit.text() == value:
             logger.debug("Received set averages failure.")
             self.set_averages_failure.emit()
