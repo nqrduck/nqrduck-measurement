@@ -23,7 +23,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
      <item>
-      <layout class="QVBoxLayout" name="settingsLayout" stretch="0,0,0,0,0">
+      <layout class="QVBoxLayout" name="settingsLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QLabel" name="titleLable">
          <property name="font">
@@ -87,6 +87,70 @@
         </widget>
        </item>
        <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Signal Processing</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="text">
+          <string>Apodization</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Baseline Correction</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="text">
+          <string>Peak-Picking</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_4">
+         <property name="text">
+          <string>Fitting</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="spsettingsButton">
+         <property name="text">
+          <string>Settings</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -98,6 +162,24 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="dataLayout">
+         <item>
+          <widget class="QPushButton" name="exportButton">
+           <property name="text">
+            <string>Export Measurement</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="importButton">
+           <property name="text">
+            <string>Import Measurement</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
