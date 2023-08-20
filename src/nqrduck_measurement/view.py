@@ -7,6 +7,7 @@ from PyQt6.QtGui import QMovie
 from PyQt6.QtCore import pyqtSlot, Qt
 from nqrduck.module.module_view import ModuleView
 from nqrduck.assets.icons import Logos
+from nqrduck.assets.animations import DuckAnimations
 from .widget import Ui_Form
 
 logger = logging.getLogger(__name__)
@@ -71,7 +72,8 @@ class MeasurementView(ModuleView):
         self._ui_form.importButton.setIcon(Logos.Load16x16())
         self._ui_form.importButton.setIconSize(self._ui_form.importButton.size())
 
-    def init_plotter(self):
+    def init_plotter(self) -> None:
+        """Initialize plotter with the according units for time domain."""
         plotter = self._ui_form.plotter
         plotter.canvas.ax.clear()
         plotter.canvas.ax.set_xlim(0, 100)
@@ -81,7 +83,8 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_title("Measurement data - Time domain")
         plotter.canvas.ax.grid()
             
-    def change_to_time_view(self):
+    def change_to_time_view(self) -> None:
+        """Change plotter to time domain view."""
         plotter = self._ui_form.plotter
         self._ui_form.fftButton.setText("FFT")
         plotter.canvas.ax.clear()
@@ -90,7 +93,8 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_title("Measurement data - Time domain")
         plotter.canvas.ax.grid()
 
-    def change_to_fft_view(self):
+    def change_to_fft_view(self)-> None:
+        """Change plotter to frequency domain view."""
         plotter = self._ui_form.plotter
         self._ui_form.fftButton.setText("iFFT")
         plotter.canvas.ax.clear()
@@ -100,7 +104,9 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.grid()
 
     @pyqtSlot()
-    def update_displayed_measurement(self):
+    def update_displayed_measurement(self) -> None:
+        """Update displayed measurement data.
+        """
         logger.debug("Updating displayed measurement view.")
         plotter = self._ui_form.plotter
         plotter.canvas.ax.clear()
@@ -120,12 +126,17 @@ class MeasurementView(ModuleView):
         self._ui_form.plotter.canvas.draw()
 
     @pyqtSlot()
-    def on_measurement_start_button_clicked(self):
+    def on_measurement_start_button_clicked(self) -> None:
+        """Slot for when the measurement start button is clicked."""
         logger.debug("Measurement start button clicked.")
         self.module.controller.start_measurement()
 
     @pyqtSlot(str)
-    def on_editing_finished(self, value):
+    def on_editing_finished(self, value : str) -> None:
+        """Slot for when the editing of either the frequencyEdit or averagesEdit is finished.
+        
+        Args:
+            value (str): The value of the line edit."""
         logger.debug("Editing finished.")
         self.sender().setStyleSheet("")
         if self.sender() == self._ui_form.frequencyEdit:
@@ -134,18 +145,20 @@ class MeasurementView(ModuleView):
             self.module.controller.set_averages(value)
 
     @pyqtSlot()
-    def on_set_frequency_failure(self):
+    def on_set_frequency_failure(self) -> None:
         """Slot for when the set frequency signal fails."""
         logger.debug("Set frequency failure.")
         self._ui_form.frequencyEdit.setStyleSheet("border: 1px solid red;")
 
     @pyqtSlot()
-    def on_set_averages_failure(self):
+    def on_set_averages_failure(self) -> None:
         """Slot for when the set averages signal fails."""
         logger.debug("Set averages failure.")
         self._ui_form.averagesEdit.setStyleSheet("border: 1px solid red;")
 
     class MeasurementDialog(QDialog):
+        """ This Dialog is shown when the measurement is started and therefore blocks the main window.
+        It shows the duck animation and a message."""
         def __init__(self):
             super().__init__()
             self.finished = True
@@ -153,12 +166,13 @@ class MeasurementView(ModuleView):
             self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-            path = Path(__file__).parent
-            self.spinner_movie = QMovie(str(path / "resources/duck_kick.gif"))  # Replace with your own spinner gif
+            self.message_label = ("Measuring...")
+            self.spinner_movie = DuckAnimations.DuckKick128x128()
             self.spinner_label = QLabel(self)
             self.spinner_label.setMovie(self.spinner_movie)
 
             self.layout = QVBoxLayout(self)
+            self.layout.addWidget(QLabel(self.message_label))
             self.layout.addWidget(self.spinner_label)
 
             self.spinner_movie.finished.connect(self.on_movie_finished)
