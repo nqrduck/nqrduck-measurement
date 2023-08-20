@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout
 from PyQt6.QtGui import QMovie
 from PyQt6.QtCore import pyqtSlot, Qt
 from nqrduck.module.module_view import ModuleView
+from nqrduck.assets.icons import Logos
 from .widget import Ui_Form
 
 logger = logging.getLogger(__name__)
@@ -60,6 +61,15 @@ class MeasurementView(ModuleView):
 
         # Call validator for buttonStart
         
+        # Add logos
+        self._ui_form.buttonStart.setIcon(Logos.Play_16x16())
+        self._ui_form.buttonStart.setIconSize(self._ui_form.buttonStart.size())
+
+        self._ui_form.exportButton.setIcon(Logos.Save16x16())
+        self._ui_form.exportButton.setIconSize(self._ui_form.exportButton.size())
+
+        self._ui_form.importButton.setIcon(Logos.Load16x16())
+        self._ui_form.importButton.setIconSize(self._ui_form.importButton.size())
 
     def init_plotter(self):
         plotter = self._ui_form.plotter
