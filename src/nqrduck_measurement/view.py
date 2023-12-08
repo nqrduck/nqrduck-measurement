@@ -120,7 +120,15 @@ class MeasurementView(ModuleView):
                 x = self.module.model.displayed_measurement.tdx
                 y = self.module.model.displayed_measurement.tdy
 
-            self._ui_form.plotter.canvas.ax.plot(x, y)
+            self._ui_form.plotter.canvas.ax.plot(x, y.real, label="Real", linestyle="-", alpha=0.35, color="red")
+            self._ui_form.plotter.canvas.ax.plot(x, y.imag, label="Imaginary", linestyle="-", alpha=0.35, color="green")
+            # Magnitude
+            self._ui_form.plotter.canvas.ax.plot(x, np.abs(y), label="Magnitude", color="blue")
+
+
+            # Add legend
+            self._ui_form.plotter.canvas.ax.legend()
+
         except AttributeError:
             logger.debug("No measurement data to display.")
         self._ui_form.plotter.canvas.draw()
