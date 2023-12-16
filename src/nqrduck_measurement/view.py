@@ -72,6 +72,11 @@ class MeasurementView(ModuleView):
         self._ui_form.importButton.setIcon(Logos.Load16x16())
         self._ui_form.importButton.setIconSize(self._ui_form.importButton.size())
 
+        # Connect measurement save  and load buttons
+        self._ui_form.exportButton.clicked.connect(self.on_measurement_save_button_clicked)
+        self._ui_form.importButton.clicked.connect(self.on_measurement_load_button_clicked)
+
+
     def init_plotter(self) -> None:
         """Initialize plotter with the according units for time domain."""
         plotter = self._ui_form.plotter
@@ -164,6 +169,27 @@ class MeasurementView(ModuleView):
         logger.debug("Set averages failure.")
         self._ui_form.averagesEdit.setStyleSheet("border: 1px solid red;")
 
+    @pyqtSlot()
+    def on_measurement_save_button_clicked(self) -> None:
+        """Slot for when the measurement save button is clicked."""
+        logger.debug("Measurement save button clicked.")
+
+        file_manager = self.QFileManager(self.module.model.FILE_EXTENSION, parent=self.widget)
+        file_name = file_manager.saveFileDialog()
+        if file_name:
+            self.module.controller.save_measurement(file_name)
+
+    @pyqtSlot()
+    def on_measurement_load_button_clicked(self) -> None:
+        """Slot for when the measurement load button is clicked."""
+        logger.debug("Measurement load button clicked.")
+
+        file_manager = self.QFileManager(self.module.model.FILE_EXTENSION, parent=self.widget)
+        file_name = file_manager.loadFileDialog()
+        if file_name:
+            self.module.controller.load_measurement(file_name)
+
+
     class MeasurementDialog(QDialog):
         """ This Dialog is shown when the measurement is started and therefore blocks the main window.
         It shows the duck animation and a message."""
@@ -195,3 +221,5 @@ class MeasurementView(ModuleView):
                 continue
             self.spinner_movie.stop()
             super().hide()
+
+    

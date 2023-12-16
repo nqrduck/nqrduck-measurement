@@ -1,4 +1,5 @@
 import logging
+import json
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 from nqrduck.module.module_controller import ModuleController
@@ -100,3 +101,43 @@ class MeasurementController(ModuleController):
         ):
             logger.debug("Received set averages failure.")
             self.set_averages_failure.emit()
+
+    def save_measurement(self, file_name : str) -> None:
+        """Save measurement to file.
+
+        Args:
+            file_name (str): Path to file.
+        """
+        logger.debug("Saving measurement.")
+        if not self.module.model.measurements:
+            logger.debug("No measurement to save.")
+            return
+        
+        measurement = self.module.model.measurements[-1].to_json()
+
+        with open(file_name, "w") as f:
+            json.dump(measurement, f)
+
+    def  load_measurement(self, file_name: str) -> None:
+        """Load measurement from file.
+
+        Args:
+            file_name (str): Path to file.
+        """
+        logger.debug("Loading measurement.")
+
+        try:
+            with open(file_name, "r") as f:
+                measurement = Measurement.from_json(json.load(f))
+                self.module.model.add_measurement(measurement)
+                self.module.model.displayed_measurement = measurement
+        except FileNotFoundError:
+            logger.debug("File not found.")
+            self.module.nqrduck_signal.emit(
+                "notification", ["Error", "File not found."]
+            )
+        except (json.JSONDecodeError, KeyError):
+            logger.debug("File is not a valid measurement file.")
+            self.module.nqrduck_signal.emit(
+                "notification", ["Error", "File is not a valid measurement file."]
+            )
