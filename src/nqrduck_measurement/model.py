@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class MeasurementModel(ModuleModel):
 
-    FILE_EXTENSION = ".meas"
+    FILE_EXTENSION = "meas"
     # This constants are used to determine which view is currently displayed.
     FFT_VIEW = "fft"
     TIME_VIEW = "time"
