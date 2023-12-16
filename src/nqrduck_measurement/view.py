@@ -76,6 +76,10 @@ class MeasurementView(ModuleView):
         self._ui_form.exportButton.clicked.connect(self.on_measurement_save_button_clicked)
         self._ui_form.importButton.clicked.connect(self.on_measurement_load_button_clicked)
 
+        # Make title label bold
+        self._ui_form.titleLabel.setStyleSheet("font-weight: bold;")
+
+        self._ui_form.spLabel.setStyleSheet("font-weight: bold;")
 
     def init_plotter(self) -> None:
         """Initialize plotter with the according units for time domain."""

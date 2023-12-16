@@ -101,6 +101,9 @@ class MeasurementController(ModuleController):
         ):
             logger.debug("Received set averages failure.")
             self.set_averages_failure.emit()
+        elif key == "active_spectrometer_changed":
+            self.module.view._ui_form.spectrometerLabel.setText("Spectrometer: %s" % value)
+
 
     def save_measurement(self, file_name : str) -> None:
         """Save measurement to file.
