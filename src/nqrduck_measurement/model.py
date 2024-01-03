@@ -20,6 +20,7 @@ class MeasurementModel(ModuleModel):
         super().__init__(module)
         self.view_mode = self.TIME_VIEW
         self.measurements = []
+        self._displayed_measurement = None
 
     @property
     def view_mode(self):

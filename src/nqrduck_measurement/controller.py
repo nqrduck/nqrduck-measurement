@@ -1,7 +1,12 @@
 import logging
 import json
+import numpy as np
+from  decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
-from PyQt6.QtWidgets import QWidget
+import nqrduck.helpers.signalprocessing as sp
+from nqrduck_pulseprogrammer.view import OptionsDialog
+from nqrduck_spectrometer.pulsesequence import PulseSequence
+from .signalprocessing_options import Apodization
 from nqrduck.module.module_controller import ModuleController
 from nqrduck_spectrometer.measurement import Measurement
 
@@ -144,3 +149,51 @@ class MeasurementController(ModuleController):
             self.module.nqrduck_signal.emit(
                 "notification", ["Error", "File is not a valid measurement file."]
             )
+
+    def show_apodization_dialog(self) -> None:
+        """Show apodization dialog."""
+        logger.debug("Showing apodization dialog.")
+        # First we  check if there is a measurement.
+        if not self.module.model.displayed_measurement:
+            logger.debug("No measurement to apodize.")
+            self.module.nqrduck_signal.emit(
+                "notification", ["Error", "No measurement to apodize."]
+            )
+            return
+        
+         # We need to create a event which corresponds to the measurement.
+        event_duration = self.module.model.displayed_measurement.tdx[-1] * 1e-6
+
+        event = PulseSequence.Event(name="Apodization", duration=str(event_duration))
+        parameter = Apodization()
+        parameter.start_x  = 0
+        parameter.end_x = event_duration
+        dialog = OptionsDialog(event, parameter, self.module.view)
+        result = dialog.exec()
+
+        if result:
+            for option, function in dialog.return_functions.items():
+                logger.debug("Setting option %s of parameter %s in event %s to %s", option, parameter, event, function())
+                option.set_value(function())
+
+        # Get the function from the Apodization function
+        function = parameter.get_option_by_name(Apodization.APODIZATION_FUNCTIONS).value
+        logger.debug("Apodization function: %s", function)
+
+        # Get the y data weights from the function
+        resolution = (self.module.model.displayed_measurement.tdx[1] - self.module.model.displayed_measurement.tdx[0]) * 1e-6
+        y_weight = function.get_pulse_amplitude(event.duration, Decimal(resolution))
+        #Append the last point to the end of the array
+        y_weight = np.append(y_weight, y_weight[-1])
+
+        tdy_measurement = self.module.model.displayed_measurement.tdy * y_weight
+
+        measurement = Measurement(
+            self.module.model.displayed_measurement.tdx,
+            tdy_measurement,
+            target_frequency=self.module.model.displayed_measurement.target_frequency,
+            IF_frequency=self.module.model.displayed_measurement.IF_frequency,
+        )
+
+        self.module.model.displayed_measurement = measurement
+        self.module.model.add_measurement(measurement)
