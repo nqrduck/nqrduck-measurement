@@ -116,28 +116,28 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="apodizationButton">
          <property name="text">
           <string>Apodization</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="baselineButton">
          <property name="text">
           <string>Baseline Correction</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="peakButton">
          <property name="text">
           <string>Peak-Picking</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="fittingButton">
          <property name="text">
           <string>Fitting</string>
          </property>

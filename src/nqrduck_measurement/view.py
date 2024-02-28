@@ -60,6 +60,8 @@ class MeasurementView(ModuleView):
         self.module.controller.set_frequency_failure.connect(self.on_set_frequency_failure)
         self.module.controller.set_averages_failure.connect(self.on_set_averages_failure)
 
+        self._ui_form.apodizationButton.clicked.connect(self.module.controller.show_apodization_dialog)
+
         # Call validator for buttonStart
         
         # Add logos
@@ -226,4 +228,3 @@ class MeasurementView(ModuleView):
             self.spinner_movie.stop()
             super().hide()
 
-    

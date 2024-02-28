@@ -26,7 +26,10 @@ classifiers = [
 dependencies = [
     "matplotlib",
     "pyqt6",
+    "sympy",
     "NQRduck",
+    "nqrduck-pulseprogrammer",
+    "nqrduck-spectrometer",
 ]
 
 [project.entry-points."nqrduck"]
