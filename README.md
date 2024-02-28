@@ -1,4 +1,4 @@
-# NQRduck Module: nqrduck-broadband
+# NQRduck Module: nqrduck-measurement
 
 A module for the [nqrduck](https://github.com/nqrduck/nqrduck) project. This module is used for single frequency magnetic resonance experiments.
 
