@@ -28,6 +28,8 @@ The module is used with the [Spectrometer](https://github.com/nqrduck/nqrduck-sp
 - [nqrduck-spectrometer-limenqr](https://github.com/nqrduck/nqrduck-spectrometer-limenqr) A module used for magnetic resonance experiments with the LimeSDR (USB or Mini 2.0).
 - [nqrduck-spectrometer-simulator](https://github.com/nqrduck/nqrduck-spectrometer-simulator) A module used for simulating magnetic resonance experiments.
 
+The pulse sequence and spectrometer settings can be adjusted using the 'Spectrometer' tab. 
+
 <img src="docs/img/measurement_ui_labeled_v2.png" alt="drawing" width="800">
 
 - a.) The experiments settings for frequency and number of averages.
