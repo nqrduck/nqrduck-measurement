@@ -34,7 +34,7 @@ class MeasurementController(ModuleController):
 
         # Use validator
         if self.module.model.validator_measurement_frequency.validate(value, 0) == QValidator.State.Acceptable:
-            self.module.model.measurement_frequency = float(value)
+            self.module.model.measurement_frequency = float(value) * 1e6
             self.module.nqrduck_signal.emit("set_frequency", str(self.module.model.measurement_frequency))
 
         self.toggle_start_button()
@@ -69,6 +69,11 @@ class MeasurementController(ModuleController):
         """Emit the start measurement signal."""
         logger.debug("Start measurement clicked")
         self.module.view.measurement_dialog.show()
+
+        # Set the measurement parameters again in case the user switches spectrometer
+        self.module.nqrduck_signal.emit("set_frequency", str(self.module.model.measurement_frequency))
+        self.module.nqrduck_signal.emit("set_averages", str(self.module.model.averages))
+        QApplication.processEvents()
 
         self.module.nqrduck_signal.emit("start_measurement", None)
 
