@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib as mpl
 from PyQt6.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout
-from PyQt6.QtGui import QMovie
+from PyQt6.QtGui import QValidator
 from PyQt6.QtCore import pyqtSlot, Qt
 from nqrduck.module.module_view import ModuleView
 from nqrduck.assets.icons import Logos
@@ -54,19 +54,23 @@ class MeasurementView(ModuleView):
         self._ui_form.buttonStart.clicked.connect(self.on_measurement_start_button_clicked)
         self._ui_form.fftButton.clicked.connect(self.module.controller.change_view_mode)
 
-        self._ui_form.frequencyEdit.editingFinished.connect(lambda: self.on_editing_finished(self._ui_form.frequencyEdit.text()))
-        self._ui_form.averagesEdit.editingFinished.connect(lambda: self.on_editing_finished(self._ui_form.averagesEdit.text()))
+        # Measurement settings controller
+        self._ui_form.frequencyEdit.textChanged.connect(lambda: self.module.controller.set_frequency(self._ui_form.frequencyEdit.text()))
+        self._ui_form.averagesEdit.textChanged.connect(lambda: self.module.controller.set_averages(self._ui_form.averagesEdit.text()))
+
+        # Update fields
+        self._ui_form.frequencyEdit.textChanged.connect(lambda: self.update_input_widgets(self._ui_form.frequencyEdit, self.module.model.validator_measurement_frequency ))
+        self._ui_form.averagesEdit.textChanged.connect(lambda: self.update_input_widgets(self._ui_form.averagesEdit, self.module.model.validator_averages))
 
         self.module.controller.set_frequency_failure.connect(self.on_set_frequency_failure)
         self.module.controller.set_averages_failure.connect(self.on_set_averages_failure)
 
         self._ui_form.apodizationButton.clicked.connect(self.module.controller.show_apodization_dialog)
-
-        # Call validator for buttonStart
         
         # Add logos
         self._ui_form.buttonStart.setIcon(Logos.Play_16x16())
         self._ui_form.buttonStart.setIconSize(self._ui_form.buttonStart.size())
+        self._ui_form.buttonStart.setEnabled(False)
 
         self._ui_form.exportButton.setIcon(Logos.Save16x16())
         self._ui_form.exportButton.setIconSize(self._ui_form.exportButton.size())
@@ -150,19 +154,6 @@ class MeasurementView(ModuleView):
         logger.debug("Measurement start button clicked.")
         self.module.controller.start_measurement()
 
-    @pyqtSlot(str)
-    def on_editing_finished(self, value : str) -> None:
-        """Slot for when the editing of either the frequencyEdit or averagesEdit is finished.
-        
-        Args:
-            value (str): The value of the line edit."""
-        logger.debug("Editing finished.")
-        self.sender().setStyleSheet("")
-        if self.sender() == self._ui_form.frequencyEdit:
-            self.module.controller.set_frequency(value)
-        elif self.sender() == self._ui_form.averagesEdit:
-            self.module.controller.set_averages(value)
-
     @pyqtSlot()
     def on_set_frequency_failure(self) -> None:
         """Slot for when the set frequency signal fails."""
@@ -194,6 +185,26 @@ class MeasurementView(ModuleView):
         file_name = file_manager.loadFileDialog()
         if file_name:
             self.module.controller.load_measurement(file_name)
+
+    @pyqtSlot()
+    def update_input_widgets(self, widget, validator) -> None:
+        """Update the style of the QLineEdit widget to indicate if the value is valid.
+        
+        Args:
+            widget (QLineEdit): The widget to update.
+            validator (QValidator): The validator to use for the widget."""
+        if (
+            validator.validate(widget.text(), 0)
+            == QValidator.State.Acceptable
+        ):
+            widget.setStyleSheet("QLineEdit { background-color: white; }")
+        elif (
+            validator.validate(widget.text(), 0)
+            == QValidator.State.Intermediate
+        ):
+            widget.setStyleSheet("QLineEdit { background-color: yellow; }")
+        else:
+            widget.setStyleSheet("QLineEdit { background-color: red; }")
 
 
     class MeasurementDialog(QDialog):

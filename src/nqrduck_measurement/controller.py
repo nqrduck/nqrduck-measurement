@@ -3,6 +3,8 @@ import json
 import numpy as np
 from  decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
+from PyQt6.QtGui import QValidator
+from PyQt6.QtWidgets import QApplication
 import nqrduck.helpers.signalprocessing as sp
 from nqrduck_pulseprogrammer.view import OptionsDialog
 from nqrduck_spectrometer.pulsesequence import PulseSequence
@@ -29,11 +31,13 @@ class MeasurementController(ModuleController):
 
         Raises:
             ValueError: If value cannot be converted to float."""
-        try:
-            logger.debug("Setting frequency to: %s MHz" % value)
-            self.module.nqrduck_signal.emit("set_frequency", float(value) * 1e6)
-        except ValueError:
-            self.set_averages_failure.emit()
+
+        # Use validator
+        if self.module.model.validator_measurement_frequency.validate(value, 0) == QValidator.State.Acceptable:
+            self.module.model.measurement_frequency = float(value)
+            self.module.nqrduck_signal.emit("set_frequency", str(self.module.model.measurement_frequency))
+
+        self.toggle_start_button()
 
     @pyqtSlot(str)
     def set_averages(self, value: str) -> None:
@@ -43,7 +47,12 @@ class MeasurementController(ModuleController):
             value (str): Number of averages.
         """
         logger.debug("Setting averages to: " + value)
-        self.module.nqrduck_signal.emit("set_averages", value)
+        #self.module.nqrduck_signal.emit("set_averages", value)
+        if self.module.model.validator_averages.validate(value, 0) == QValidator.State.Acceptable:
+            self.module.model.averages = int(value)
+            self.module.nqrduck_signal.emit("set_averages", str(self.module.model.averages))
+        
+        self.toggle_start_button()
 
     @pyqtSlot()
     def change_view_mode(self) -> None:
@@ -57,10 +66,27 @@ class MeasurementController(ModuleController):
         logger.debug("View mode changed to: " + self.module.model.view_mode)
 
     def start_measurement(self) -> None:
-        """Emmit the start measurement signal."""
+        """Emit the start measurement signal."""
         logger.debug("Start measurement clicked")
         self.module.view.measurement_dialog.show()
+
         self.module.nqrduck_signal.emit("start_measurement", None)
+
+    def toggle_start_button(self) -> None:
+        """Based on wether the Validators for frequency and averages are in an acceptable state, the start button is enabled or disabled."""
+        if (
+            self.module.model.validator_measurement_frequency.validate(
+                self.module.view._ui_form.frequencyEdit.text(), 0
+            )
+            == QValidator.State.Acceptable
+            and self.module.model.validator_averages.validate(
+                self.module.view._ui_form.averagesEdit.text(), 0
+            )
+            == QValidator.State.Acceptable
+        ):
+            self.module.view._ui_form.buttonStart.setEnabled(True)
+        else:
+            self.module.view._ui_form.buttonStart.setEnabled(False)
 
     def process_signals(self, key: str, value: object):
         """Process incoming signal from the nqrduck module.
