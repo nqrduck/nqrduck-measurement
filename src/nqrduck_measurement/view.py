@@ -16,25 +16,6 @@ class MeasurementView(ModuleView):
     def __init__(self, module):
         super().__init__(module)
 
-        # Set custom matplotlib parameters
-        mpl.rcParams.update({
-            "figure.facecolor":  (0.0, 0.0, 0.0, 0.00),  # transparent   
-            "axes.facecolor":    (0.0, 1.0, 0.0, 0.03),  # green 
-            "savefig.facecolor": (0.0, 0.0, 0.0, 0.0),  # transparent
-        })
-
-        # Set custom matplotlib parameters
-        mpl.rcParams['figure.subplot.bottom'] = 0.2
-        mpl.rcParams['axes.linewidth'] = 1.5
-        mpl.rcParams['xtick.major.width'] = 1.5
-        mpl.rcParams['ytick.major.width'] = 1.5
-        mpl.rcParams['xtick.minor.width'] = 1.5
-        mpl.rcParams['ytick.minor.width'] = 1.5
-        mpl.rcParams['xtick.major.size'] = 6
-        mpl.rcParams['ytick.major.size'] = 6
-        mpl.rcParams['xtick.minor.size'] = 4
-        mpl.rcParams['ytick.minor.size'] = 4
-
         widget = QWidget()
         self._ui_form = Ui_Form()
         self._ui_form.setupUi(self)
