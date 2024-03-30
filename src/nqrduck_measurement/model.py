@@ -1,3 +1,4 @@
+"""Model for the measurement module."""
 import logging
 from PyQt6.QtCore import pyqtSignal
 from nqrduck_spectrometer.measurement import Measurement
@@ -7,6 +8,31 @@ from nqrduck.helpers.validators import DuckFloatValidator, DuckIntValidator
 logger = logging.getLogger(__name__)
 
 class MeasurementModel(ModuleModel):
+    """Model for the measurement module.
+    
+    This class is responsible for storing the data of the measurement module.
+    
+    Attributes:
+        FILE_EXTENSION (str): The file extension of the measurement files.
+        FFT_VIEW (str): The view mode for the FFT view.
+        TIME_VIEW (str): The view mode for the time view.
+        
+        displayed_measurement_changed (pyqtSignal): Signal emitted when the displayed measurement changes.
+        measurements_changed (pyqtSignal): Signal emitted when the list of measurements changes.
+        view_mode_changed (pyqtSignal): Signal emitted when the view mode changes.
+        
+        measurement_frequency_changed (pyqtSignal): Signal emitted when the measurement frequency changes.
+        averages_changed (pyqtSignal): Signal emitted when the number of averages changes.
+        
+        view_mode (str): The view mode of the measurement view.
+        measurements (list): List of measurements.
+        displayed_measurement (Measurement): The displayed measurement data.
+        measurement_frequency (float): The measurement frequency.
+        averages (int): The number of averages.
+        
+        validator_measurement_frequency (DuckFloatValidator): Validator for the measurement frequency.
+        validator_averages (DuckIntValidator): Validator for the number of averages.
+    """
 
     FILE_EXTENSION = "meas"
     # This constants are used to determine which view is currently displayed.
@@ -21,6 +47,7 @@ class MeasurementModel(ModuleModel):
     averages_changed = pyqtSignal(int)
 
     def __init__(self, module) -> None:
+        """Initialize the model."""
         super().__init__(module)
         self.view_mode = self.TIME_VIEW
         self.measurements = []
@@ -33,9 +60,11 @@ class MeasurementModel(ModuleModel):
         self.averages = 1
 
     @property
-    def view_mode(self):
+    def view_mode(self) -> str:
         """View mode of the measurement view.
-        Can be either "time" or "fft"."""
+
+        Can be either "time" or "fft".
+        """
         return self._view_mode
     
     @view_mode.setter
@@ -61,8 +90,10 @@ class MeasurementModel(ModuleModel):
     @property
     def displayed_measurement(self):
         """Displayed measurement data.
+
         This is the data that is displayed in the view.
-        It can be data in time domain or frequency domain."""
+        It can be data in time domain or frequency domain.
+        """
         return self._displayed_measurement
     
     @displayed_measurement.setter

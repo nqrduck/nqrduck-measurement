@@ -1,7 +1,6 @@
+"""View for the measurement module."""
 import logging
 import numpy as np
-from pathlib import Path
-import matplotlib as mpl
 from PyQt6.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout
 from PyQt6.QtGui import QValidator
 from PyQt6.QtCore import pyqtSlot, Qt
@@ -13,7 +12,20 @@ from .widget import Ui_Form
 logger = logging.getLogger(__name__)
 
 class MeasurementView(ModuleView):
+    """View for the measurement module.
+    
+    This class is responsible for displaying the measurement data and handling the user input.
+    
+    Args:
+        module (Module): The module instance.
+    
+    Attributes:
+        widget (QWidget): The widget of the view.
+        _ui_form (Ui_Form): The form of the widget.
+        measurement_dialog (MeasurementDialog): The dialog shown when the measurement is started.
+    """
     def __init__(self, module):
+        """Initialize the measurement view."""
         super().__init__(module)
 
         widget = QWidget()
@@ -101,8 +113,7 @@ class MeasurementView(ModuleView):
 
     @pyqtSlot()
     def update_displayed_measurement(self) -> None:
-        """Update displayed measurement data.
-        """
+        """Update displayed measurement data."""
         logger.debug("Updating displayed measurement view.")
         plotter = self._ui_form.plotter
         plotter.canvas.ax.clear()
@@ -173,7 +184,8 @@ class MeasurementView(ModuleView):
         
         Args:
             widget (QLineEdit): The widget to update.
-            validator (QValidator): The validator to use for the widget."""
+            validator (QValidator): The validator to use for the widget.
+        """
         if (
             validator.validate(widget.text(), 0)
             == QValidator.State.Acceptable
@@ -189,9 +201,15 @@ class MeasurementView(ModuleView):
 
 
     class MeasurementDialog(QDialog):
-        """ This Dialog is shown when the measurement is started and therefore blocks the main window.
-        It shows the duck animation and a message."""
+        """This Dialog is shown when the measurement is started and therefore blocks the main window.
+
+        It shows the duck animation and a message.
+
+        Attributes:
+            finished (bool): True if the spinner movie is finished.
+        """
         def __init__(self):
+            """Initialize the dialog."""
             super().__init__()
             self.finished = True
             self.setModal(True)
@@ -211,10 +229,12 @@ class MeasurementView(ModuleView):
 
             self.spinner_movie.start()
 
-        def on_movie_finished(self):
+        def on_movie_finished(self) -> None:
+            """Called when the spinner movie is finished."""
             self.finished = True
 
-        def hide(self):
+        def hide(self) -> None:
+            """Hide the dialog and stop the spinner movie."""
             while not self.finished:
                 continue
             self.spinner_movie.stop()

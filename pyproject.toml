@@ -32,5 +32,31 @@ dependencies = [
     "nqrduck-spectrometer",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "black",
+    "pydocstyle",
+    "pyupgrade",
+    "ruff",
+]
+
+
 [project.entry-points."nqrduck"]
 "nqrduck-measurement" = "nqrduck_measurement.measurement:Measurement"
+
+[tool.ruff]
+exclude = [
+  "widget.py",
+]
+
+[tool.ruff.lint]
+extend-select = [
+  "UP",  # pyupgrade
+  "D",   # pydocstyle
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

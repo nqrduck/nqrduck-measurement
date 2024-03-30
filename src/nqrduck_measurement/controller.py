@@ -1,3 +1,4 @@
+"""Controller for the measurement module."""
 import logging
 import json
 import numpy as np
@@ -5,7 +6,6 @@ from  decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtGui import QValidator
 from PyQt6.QtWidgets import QApplication
-import nqrduck.helpers.signalprocessing as sp
 from nqrduck_pulseprogrammer.view import OptionsDialog
 from nqrduck_spectrometer.pulsesequence import PulseSequence
 from .signalprocessing_options import Apodization
@@ -16,10 +16,22 @@ logger = logging.getLogger(__name__)
 
 
 class MeasurementController(ModuleController):
+    """Controller for the measurement module.
+    
+    This class is responsible for handling the signals from the view and the module and updating the model.
+    
+    Args:
+        module (Module): The module instance.
+        
+    Attributes:
+        set_frequency_failure (pyqtSignal): Signal emitted when setting the frequency fails.
+        set_averages_failure (pyqtSignal): Signal emitted when setting the averages fails.
+    """
     set_frequency_failure = pyqtSignal()
     set_averages_failure = pyqtSignal()
 
     def __init__(self, module):
+        """Initialize the controller."""
         super().__init__(module)
 
     @pyqtSlot(str)
@@ -30,8 +42,8 @@ class MeasurementController(ModuleController):
             value (str): Frequency in MHz.
 
         Raises:
-            ValueError: If value cannot be converted to float."""
-
+        ValueError: If value cannot be converted to float.
+        """
         # Use validator
         if self.module.model.validator_measurement_frequency.validate(value, 0) == QValidator.State.Acceptable:
             self.module.model.measurement_frequency = float(value) * 1e6
@@ -93,12 +105,12 @@ class MeasurementController(ModuleController):
         else:
             self.module.view._ui_form.buttonStart.setEnabled(False)
 
-    def process_signals(self, key: str, value: object):
+    def process_signals(self, key: str, value: object) -> None:
         """Process incoming signal from the nqrduck module.
         
-        Arguments:
-            key (str) -- The key of the signal.
-            value (object) -- The value of the signal.
+        Args:
+            key (str): The key of the signal.
+            value (object): The value of the signal.
         """
         logger.debug(
             "Measurement Dialog is visible: "
@@ -166,7 +178,7 @@ class MeasurementController(ModuleController):
         logger.debug("Loading measurement.")
 
         try:
-            with open(file_name, "r") as f:
+            with open(file_name) as f:
                 measurement = Measurement.from_json(json.load(f))
                 self.module.model.add_measurement(measurement)
                 self.module.model.displayed_measurement = measurement
