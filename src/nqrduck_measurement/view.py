@@ -1,4 +1,5 @@
 """View for the measurement module."""
+
 import logging
 import numpy as np
 from PyQt6.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout
@@ -11,19 +12,21 @@ from .widget import Ui_Form
 
 logger = logging.getLogger(__name__)
 
+
 class MeasurementView(ModuleView):
     """View for the measurement module.
-    
+
     This class is responsible for displaying the measurement data and handling the user input.
-    
+
     Args:
         module (Module): The module instance.
-    
+
     Attributes:
         widget (QWidget): The widget of the view.
         _ui_form (Ui_Form): The form of the widget.
         measurement_dialog (MeasurementDialog): The dialog shown when the measurement is started.
     """
+
     def __init__(self, module):
         """Initialize the measurement view."""
         super().__init__(module)
@@ -35,31 +38,60 @@ class MeasurementView(ModuleView):
 
         # Initialize plotter
         self.init_plotter()
-        logger.debug("Facecolor %s" % str(self._ui_form.plotter.canvas.ax.get_facecolor()))
+        logger.debug(
+            "Facecolor %s" % str(self._ui_form.plotter.canvas.ax.get_facecolor())
+        )
 
         # Measurement dialog
-        self.measurement_dialog = self.MeasurementDialog() 
+        self.measurement_dialog = self.MeasurementDialog()
 
         # Connect signals
-        self.module.model.displayed_measurement_changed.connect(self.update_displayed_measurement)
+        self.module.model.displayed_measurement_changed.connect(
+            self.update_displayed_measurement
+        )
         self.module.model.view_mode_changed.connect(self.update_displayed_measurement)
 
-        self._ui_form.buttonStart.clicked.connect(self.on_measurement_start_button_clicked)
+        self._ui_form.buttonStart.clicked.connect(
+            self.on_measurement_start_button_clicked
+        )
         self._ui_form.fftButton.clicked.connect(self.module.controller.change_view_mode)
 
         # Measurement settings controller
-        self._ui_form.frequencyEdit.textChanged.connect(lambda: self.module.controller.set_frequency(self._ui_form.frequencyEdit.text()))
-        self._ui_form.averagesEdit.textChanged.connect(lambda: self.module.controller.set_averages(self._ui_form.averagesEdit.text()))
+        self._ui_form.frequencyEdit.textChanged.connect(
+            lambda: self.module.controller.set_frequency(
+                self._ui_form.frequencyEdit.text()
+            )
+        )
+        self._ui_form.averagesEdit.textChanged.connect(
+            lambda: self.module.controller.set_averages(
+                self._ui_form.averagesEdit.text()
+            )
+        )
 
         # Update fields
-        self._ui_form.frequencyEdit.textChanged.connect(lambda: self.update_input_widgets(self._ui_form.frequencyEdit, self.module.model.validator_measurement_frequency ))
-        self._ui_form.averagesEdit.textChanged.connect(lambda: self.update_input_widgets(self._ui_form.averagesEdit, self.module.model.validator_averages))
+        self._ui_form.frequencyEdit.textChanged.connect(
+            lambda: self.update_input_widgets(
+                self._ui_form.frequencyEdit,
+                self.module.model.validator_measurement_frequency,
+            )
+        )
+        self._ui_form.averagesEdit.textChanged.connect(
+            lambda: self.update_input_widgets(
+                self._ui_form.averagesEdit, self.module.model.validator_averages
+            )
+        )
 
-        self.module.controller.set_frequency_failure.connect(self.on_set_frequency_failure)
-        self.module.controller.set_averages_failure.connect(self.on_set_averages_failure)
+        self.module.controller.set_frequency_failure.connect(
+            self.on_set_frequency_failure
+        )
+        self.module.controller.set_averages_failure.connect(
+            self.on_set_averages_failure
+        )
 
-        self._ui_form.apodizationButton.clicked.connect(self.module.controller.show_apodization_dialog)
-        
+        self._ui_form.apodizationButton.clicked.connect(
+            self.module.controller.show_apodization_dialog
+        )
+
         # Add logos
         self._ui_form.buttonStart.setIcon(Logos.Play_16x16())
         self._ui_form.buttonStart.setIconSize(self._ui_form.buttonStart.size())
@@ -72,8 +104,12 @@ class MeasurementView(ModuleView):
         self._ui_form.importButton.setIconSize(self._ui_form.importButton.size())
 
         # Connect measurement save  and load buttons
-        self._ui_form.exportButton.clicked.connect(self.on_measurement_save_button_clicked)
-        self._ui_form.importButton.clicked.connect(self.on_measurement_load_button_clicked)
+        self._ui_form.exportButton.clicked.connect(
+            self.on_measurement_save_button_clicked
+        )
+        self._ui_form.importButton.clicked.connect(
+            self.on_measurement_load_button_clicked
+        )
 
         # Make title label bold
         self._ui_form.titleLabel.setStyleSheet("font-weight: bold;")
@@ -90,7 +126,7 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_ylabel("Amplitude (a.u.)")
         plotter.canvas.ax.set_title("Measurement data - Time domain")
         plotter.canvas.ax.grid()
-            
+
     def change_to_time_view(self) -> None:
         """Change plotter to time domain view."""
         plotter = self._ui_form.plotter
@@ -101,7 +137,7 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_title("Measurement data - Time domain")
         plotter.canvas.ax.grid()
 
-    def change_to_fft_view(self)-> None:
+    def change_to_fft_view(self) -> None:
         """Change plotter to frequency domain view."""
         plotter = self._ui_form.plotter
         self._ui_form.fftButton.setText("iFFT")
@@ -127,11 +163,16 @@ class MeasurementView(ModuleView):
                 x = self.module.model.displayed_measurement.tdx
                 y = self.module.model.displayed_measurement.tdy
 
-            self._ui_form.plotter.canvas.ax.plot(x, y.real, label="Real", linestyle="-", alpha=0.35, color="red")
-            self._ui_form.plotter.canvas.ax.plot(x, y.imag, label="Imaginary", linestyle="-", alpha=0.35, color="green")
+            self._ui_form.plotter.canvas.ax.plot(
+                x, y.real, label="Real", linestyle="-", alpha=0.35, color="red"
+            )
+            self._ui_form.plotter.canvas.ax.plot(
+                x, y.imag, label="Imaginary", linestyle="-", alpha=0.35, color="green"
+            )
             # Magnitude
-            self._ui_form.plotter.canvas.ax.plot(x, np.abs(y), label="Magnitude", color="blue")
-
+            self._ui_form.plotter.canvas.ax.plot(
+                x, np.abs(y), label="Magnitude", color="blue"
+            )
 
             # Add legend
             self._ui_form.plotter.canvas.ax.legend()
@@ -163,7 +204,9 @@ class MeasurementView(ModuleView):
         """Slot for when the measurement save button is clicked."""
         logger.debug("Measurement save button clicked.")
 
-        file_manager = self.QFileManager(self.module.model.FILE_EXTENSION, parent=self.widget)
+        file_manager = self.QFileManager(
+            self.module.model.FILE_EXTENSION, parent=self.widget
+        )
         file_name = file_manager.saveFileDialog()
         if file_name:
             self.module.controller.save_measurement(file_name)
@@ -173,7 +216,9 @@ class MeasurementView(ModuleView):
         """Slot for when the measurement load button is clicked."""
         logger.debug("Measurement load button clicked.")
 
-        file_manager = self.QFileManager(self.module.model.FILE_EXTENSION, parent=self.widget)
+        file_manager = self.QFileManager(
+            self.module.model.FILE_EXTENSION, parent=self.widget
+        )
         file_name = file_manager.loadFileDialog()
         if file_name:
             self.module.controller.load_measurement(file_name)
@@ -181,24 +226,17 @@ class MeasurementView(ModuleView):
     @pyqtSlot()
     def update_input_widgets(self, widget, validator) -> None:
         """Update the style of the QLineEdit widget to indicate if the value is valid.
-        
+
         Args:
             widget (QLineEdit): The widget to update.
             validator (QValidator): The validator to use for the widget.
         """
-        if (
-            validator.validate(widget.text(), 0)
-            == QValidator.State.Acceptable
-        ):
+        if validator.validate(widget.text(), 0) == QValidator.State.Acceptable:
             widget.setStyleSheet("QLineEdit { background-color: white; }")
-        elif (
-            validator.validate(widget.text(), 0)
-            == QValidator.State.Intermediate
-        ):
+        elif validator.validate(widget.text(), 0) == QValidator.State.Intermediate:
             widget.setStyleSheet("QLineEdit { background-color: yellow; }")
         else:
             widget.setStyleSheet("QLineEdit { background-color: red; }")
-
 
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.
@@ -208,6 +246,7 @@ class MeasurementView(ModuleView):
         Attributes:
             finished (bool): True if the spinner movie is finished.
         """
+
         def __init__(self):
             """Initialize the dialog."""
             super().__init__()
@@ -216,7 +255,7 @@ class MeasurementView(ModuleView):
             self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-            self.message_label = ("Measuring...")
+            self.message_label = "Measuring..."
             self.spinner_movie = DuckAnimations.DuckKick128x128()
             self.spinner_label = QLabel(self)
             self.spinner_label.setMovie(self.spinner_movie)
@@ -239,4 +278,3 @@ class MeasurementView(ModuleView):
                 continue
             self.spinner_movie.stop()
             super().hide()
-

@@ -1,9 +1,16 @@
 """Signal processing options."""
+
 import sympy
 from nqrduck_spectrometer.base_spectrometer_model import BaseSpectrometerModel
-from nqrduck_spectrometer.pulseparameters import FunctionOption, GaussianFunction, CustomFunction, Function
+from nqrduck_spectrometer.pulseparameters import (
+    FunctionOption,
+    GaussianFunction,
+    CustomFunction,
+    Function,
+)
 
 # We implement the signal processing options as PulseParamterOptions because we can then easily use the automatic UI generation
+
 
 class FIDFunction(Function):
     """The exponetial FID function."""
@@ -22,13 +29,14 @@ class FIDFunction(Function):
 
 class Apodization(BaseSpectrometerModel.PulseParameter):
     """Apodization parameter.
-    
+
     This parameter is used to apply apodization functions to the signal.
     The apodization functions are used to reduce the noise in the signal.
-    
+
     Attributes:
         APODIZATION_FUNCTIONS (str): The name of the apodization functions option.
     """
+
     APODIZATION_FUNCTIONS = "Apodization functions"
 
     def __init__(self):
@@ -41,5 +49,3 @@ class Apodization(BaseSpectrometerModel.PulseParameter):
                 [FIDFunction(), GaussianFunction(), CustomFunction()],
             ),
         )
-
-

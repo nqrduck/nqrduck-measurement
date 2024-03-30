@@ -1,8 +1,9 @@
 """Controller for the measurement module."""
+
 import logging
 import json
 import numpy as np
-from  decimal import Decimal
+from decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtGui import QValidator
 from PyQt6.QtWidgets import QApplication
@@ -17,16 +18,17 @@ logger = logging.getLogger(__name__)
 
 class MeasurementController(ModuleController):
     """Controller for the measurement module.
-    
+
     This class is responsible for handling the signals from the view and the module and updating the model.
-    
+
     Args:
         module (Module): The module instance.
-        
+
     Attributes:
         set_frequency_failure (pyqtSignal): Signal emitted when setting the frequency fails.
         set_averages_failure (pyqtSignal): Signal emitted when setting the averages fails.
     """
+
     set_frequency_failure = pyqtSignal()
     set_averages_failure = pyqtSignal()
 
@@ -45,9 +47,14 @@ class MeasurementController(ModuleController):
         ValueError: If value cannot be converted to float.
         """
         # Use validator
-        if self.module.model.validator_measurement_frequency.validate(value, 0) == QValidator.State.Acceptable:
+        if (
+            self.module.model.validator_measurement_frequency.validate(value, 0)
+            == QValidator.State.Acceptable
+        ):
             self.module.model.measurement_frequency = float(value) * 1e6
-            self.module.nqrduck_signal.emit("set_frequency", str(self.module.model.measurement_frequency))
+            self.module.nqrduck_signal.emit(
+                "set_frequency", str(self.module.model.measurement_frequency)
+            )
 
         self.toggle_start_button()
 
@@ -59,11 +66,16 @@ class MeasurementController(ModuleController):
             value (str): Number of averages.
         """
         logger.debug("Setting averages to: " + value)
-        #self.module.nqrduck_signal.emit("set_averages", value)
-        if self.module.model.validator_averages.validate(value, 0) == QValidator.State.Acceptable:
+        # self.module.nqrduck_signal.emit("set_averages", value)
+        if (
+            self.module.model.validator_averages.validate(value, 0)
+            == QValidator.State.Acceptable
+        ):
             self.module.model.averages = int(value)
-            self.module.nqrduck_signal.emit("set_averages", str(self.module.model.averages))
-        
+            self.module.nqrduck_signal.emit(
+                "set_averages", str(self.module.model.averages)
+            )
+
         self.toggle_start_button()
 
     @pyqtSlot()
@@ -83,7 +95,9 @@ class MeasurementController(ModuleController):
         self.module.view.measurement_dialog.show()
 
         # Set the measurement parameters again in case the user switches spectrometer
-        self.module.nqrduck_signal.emit("set_frequency", str(self.module.model.measurement_frequency))
+        self.module.nqrduck_signal.emit(
+            "set_frequency", str(self.module.model.measurement_frequency)
+        )
         self.module.nqrduck_signal.emit("set_averages", str(self.module.model.averages))
         QApplication.processEvents()
 
@@ -107,7 +121,7 @@ class MeasurementController(ModuleController):
 
     def process_signals(self, key: str, value: object) -> None:
         """Process incoming signal from the nqrduck module.
-        
+
         Args:
             key (str): The key of the signal.
             value (object): The value of the signal.
@@ -132,9 +146,7 @@ class MeasurementController(ModuleController):
         ):
             logger.debug("Received measurement error.")
             self.module.view.measurement_dialog.hide()
-            self.module.nqrduck_signal.emit(
-                "notification", ["Error", value]
-            )
+            self.module.nqrduck_signal.emit("notification", ["Error", value])
 
         elif (
             key == "failure_set_frequency"
@@ -150,10 +162,11 @@ class MeasurementController(ModuleController):
             logger.debug("Received set averages failure.")
             self.set_averages_failure.emit()
         elif key == "active_spectrometer_changed":
-            self.module.view._ui_form.spectrometerLabel.setText("Spectrometer: %s" % value)
+            self.module.view._ui_form.spectrometerLabel.setText(
+                "Spectrometer: %s" % value
+            )
 
-
-    def save_measurement(self, file_name : str) -> None:
+    def save_measurement(self, file_name: str) -> None:
         """Save measurement to file.
 
         Args:
@@ -163,13 +176,13 @@ class MeasurementController(ModuleController):
         if not self.module.model.measurements:
             logger.debug("No measurement to save.")
             return
-        
+
         measurement = self.module.model.measurements[-1].to_json()
 
         with open(file_name, "w") as f:
             json.dump(measurement, f)
 
-    def  load_measurement(self, file_name: str) -> None:
+    def load_measurement(self, file_name: str) -> None:
         """Load measurement from file.
 
         Args:
@@ -203,20 +216,26 @@ class MeasurementController(ModuleController):
                 "notification", ["Error", "No measurement to apodize."]
             )
             return
-        
-         # We need to create a event which corresponds to the measurement.
+
+        # We need to create a event which corresponds to the measurement.
         event_duration = self.module.model.displayed_measurement.tdx[-1] * 1e-6
 
         event = PulseSequence.Event(name="Apodization", duration=str(event_duration))
         parameter = Apodization()
-        parameter.start_x  = 0
+        parameter.start_x = 0
         parameter.end_x = event_duration
         dialog = OptionsDialog(event, parameter, self.module.view)
         result = dialog.exec()
 
         if result:
             for option, function in dialog.return_functions.items():
-                logger.debug("Setting option %s of parameter %s in event %s to %s", option, parameter, event, function())
+                logger.debug(
+                    "Setting option %s of parameter %s in event %s to %s",
+                    option,
+                    parameter,
+                    event,
+                    function(),
+                )
                 option.set_value(function())
 
         # Get the function from the Apodization function
@@ -224,9 +243,12 @@ class MeasurementController(ModuleController):
         logger.debug("Apodization function: %s", function)
 
         # Get the y data weights from the function
-        resolution = (self.module.model.displayed_measurement.tdx[1] - self.module.model.displayed_measurement.tdx[0]) * 1e-6
+        resolution = (
+            self.module.model.displayed_measurement.tdx[1]
+            - self.module.model.displayed_measurement.tdx[0]
+        ) * 1e-6
         y_weight = function.get_pulse_amplitude(event.duration, Decimal(resolution))
-        #Append the last point to the end of the array
+        # Append the last point to the end of the array
         y_weight = np.append(y_weight, y_weight[-1])
 
         tdy_measurement = self.module.model.displayed_measurement.tdy * y_weight
