@@ -57,28 +57,11 @@ class MeasurementView(ModuleView):
         self._ui_form.fftButton.clicked.connect(self.module.controller.change_view_mode)
 
         # Measurement settings controller
-        self._ui_form.frequencyEdit.textChanged.connect(
-            lambda: self.module.controller.set_frequency(
-                self._ui_form.frequencyEdit.text()
-            )
+        self._ui_form.frequencyEdit.state_updated.connect(
+            lambda state, text: self.module.controller.set_frequency(state, text)
         )
-        self._ui_form.averagesEdit.textChanged.connect(
-            lambda: self.module.controller.set_averages(
-                self._ui_form.averagesEdit.text()
-            )
-        )
-
-        # Update fields
-        self._ui_form.frequencyEdit.textChanged.connect(
-            lambda: self.update_input_widgets(
-                self._ui_form.frequencyEdit,
-                self.module.model.validator_measurement_frequency,
-            )
-        )
-        self._ui_form.averagesEdit.textChanged.connect(
-            lambda: self.update_input_widgets(
-                self._ui_form.averagesEdit, self.module.model.validator_averages
-            )
+        self._ui_form.averagesEdit.state_updated.connect(
+            lambda state, text: self.module.controller.set_averages(state, text)
         )
 
         self.module.controller.set_frequency_failure.connect(
@@ -115,6 +98,13 @@ class MeasurementView(ModuleView):
         self._ui_form.titleLabel.setStyleSheet("font-weight: bold;")
 
         self._ui_form.spLabel.setStyleSheet("font-weight: bold;")
+
+        # Set Min Max Values for frequency and averages
+        self._ui_form.frequencyEdit.set_min_value(20.0)
+        self._ui_form.frequencyEdit.set_max_value(1000.0)
+
+        self._ui_form.averagesEdit.set_min_value(1)
+        self._ui_form.averagesEdit.set_max_value(1e6)
 
     def init_plotter(self) -> None:
         """Initialize plotter with the according units for time domain."""
@@ -222,21 +212,6 @@ class MeasurementView(ModuleView):
         file_name = file_manager.loadFileDialog()
         if file_name:
             self.module.controller.load_measurement(file_name)
-
-    @pyqtSlot()
-    def update_input_widgets(self, widget, validator) -> None:
-        """Update the style of the QLineEdit widget to indicate if the value is valid.
-
-        Args:
-            widget (QLineEdit): The widget to update.
-            validator (QValidator): The validator to use for the widget.
-        """
-        if validator.validate(widget.text(), 0) == QValidator.State.Acceptable:
-            widget.setStyleSheet("")
-        elif validator.validate(widget.text(), 0) == QValidator.State.Intermediate:
-            widget.setStyleSheet("QLineEdit { background-color: yellow;}")
-        else:
-            widget.setStyleSheet("QLineEdit { background-color: red;}")
 
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.

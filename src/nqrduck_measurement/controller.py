@@ -36,45 +36,47 @@ class MeasurementController(ModuleController):
         """Initialize the controller."""
         super().__init__(module)
 
-    @pyqtSlot(str)
-    def set_frequency(self, value: str) -> None:
+    @pyqtSlot(bool, str)
+    def set_frequency(self, state: bool, value: str) -> None:
         """Set frequency in MHz.
 
         Args:
             value (str): Frequency in MHz.
+            state (bool): State of the input (valid or not).
 
         Raises:
         ValueError: If value cannot be converted to float.
         """
         # Use validator
-        if (
-            self.module.model.validator_measurement_frequency.validate(value, 0)
-            == QValidator.State.Acceptable
-        ):
+        if state:
+            self.module.model.frequency_valid = True
             self.module.model.measurement_frequency = float(value) * 1e6
             self.module.nqrduck_signal.emit(
                 "set_frequency", str(self.module.model.measurement_frequency)
             )
+        else:
+            self.module.model.frequency_valid = False
 
         self.toggle_start_button()
 
-    @pyqtSlot(str)
-    def set_averages(self, value: str) -> None:
+    @pyqtSlot(bool, str)
+    def set_averages(self, state: bool, value: str) -> None:
         """Set number of averages.
 
         Args:
             value (str): Number of averages.
+            state (bool): State of the input (valid or not).
         """
         logger.debug("Setting averages to: " + value)
         # self.module.nqrduck_signal.emit("set_averages", value)
-        if (
-            self.module.model.validator_averages.validate(value, 0)
-            == QValidator.State.Acceptable
-        ):
+        if state:
+            self.module.model.averages_valid = True
             self.module.model.averages = int(value)
             self.module.nqrduck_signal.emit(
                 "set_averages", str(self.module.model.averages)
             )
+        else:
+            self.module.model.averages_valid = False
 
         self.toggle_start_button()
 
@@ -105,16 +107,9 @@ class MeasurementController(ModuleController):
 
     def toggle_start_button(self) -> None:
         """Based on wether the Validators for frequency and averages are in an acceptable state, the start button is enabled or disabled."""
-        if (
-            self.module.model.validator_measurement_frequency.validate(
-                self.module.view._ui_form.frequencyEdit.text(), 0
-            )
-            == QValidator.State.Acceptable
-            and self.module.model.validator_averages.validate(
-                self.module.view._ui_form.averagesEdit.text(), 0
-            )
-            == QValidator.State.Acceptable
-        ):
+        logger.debug(self.module.model.frequency_valid)
+        logger.debug(self.module.model.averages_valid)
+        if self.module.model.frequency_valid and self.module.model.averages_valid:
             self.module.view._ui_form.buttonStart.setEnabled(True)
         else:
             self.module.view._ui_form.buttonStart.setEnabled(False)

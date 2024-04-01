@@ -55,13 +55,11 @@ class MeasurementModel(ModuleModel):
         self.measurements = []
         self._displayed_measurement = None
 
-        self.validator_measurement_frequency = DuckFloatValidator(
-            self, min_value=20.0, max_value=1000.0
-        )
-        self.validator_averages = DuckIntValidator(self, min_value=1, max_value=1e6)
-
         self.measurement_frequency = 100.0  # MHz
         self.averages = 1
+
+        self.frequency_valid = False
+        self.averages_valid = False
 
     @property
     def view_mode(self) -> str:
@@ -117,6 +115,16 @@ class MeasurementModel(ModuleModel):
         self.measurement_frequency_changed.emit(value)
 
     @property
+    def frequency_valid(self) -> bool:
+        """Check if the frequency is valid."""
+        return self._frequency_valid
+    
+    @frequency_valid.setter
+    def frequency_valid(self, value: bool):
+        logger.debug("Frequency valid: " + str(value))
+        self._frequency_valid = value
+
+    @property
     def averages(self):
         """Number of averages."""
         return self._averages
@@ -125,3 +133,13 @@ class MeasurementModel(ModuleModel):
     def averages(self, value: int):
         self._averages = value
         self.averages_changed.emit(value)
+
+    @property
+    def  averages_valid(self) -> bool:
+        """Check if the number of averages is valid."""
+        logger.debug("Averages valid: " + str(self._averages_valid))
+        return self._averages_valid
+    
+    @averages_valid.setter
+    def averages_valid(self, value: bool):
+        self._averages_valid = value

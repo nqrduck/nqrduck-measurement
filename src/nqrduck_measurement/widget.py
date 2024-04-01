@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'Modules/nqrduck-measurement/src/nqrduck_measurement/resources/measurement_widget.ui'
+# Form implementation generated from reading ui file '../nqrduck-measurement/src/nqrduck_measurement/resources/measurement_widget.ui'
 #
 # Created by: PyQt6 UI code generator 6.5.1
 #
@@ -9,7 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form:
+class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(1920, 1080)
@@ -45,10 +45,10 @@ class Ui_Form:
         self.frequencyLabel = QtWidgets.QLabel(parent=Form)
         self.frequencyLabel.setObjectName("frequencyLabel")
         self.gridLayout.addWidget(self.frequencyLabel, 0, 0, 1, 1)
-        self.averagesEdit = QtWidgets.QLineEdit(parent=Form)
+        self.averagesEdit = DuckIntEdit(parent=Form)
         self.averagesEdit.setObjectName("averagesEdit")
         self.gridLayout.addWidget(self.averagesEdit, 1, 1, 1, 1)
-        self.frequencyEdit = QtWidgets.QLineEdit(parent=Form)
+        self.frequencyEdit = DuckFloatEdit(parent=Form)
         self.frequencyEdit.setObjectName("frequencyEdit")
         self.gridLayout.addWidget(self.frequencyEdit, 0, 1, 1, 1)
         self.frequencyunitLabel = QtWidgets.QLabel(parent=Form)
@@ -146,3 +146,4 @@ class Ui_Form:
         self.importButton.setText(_translate("Form", "Import Measurement"))
         self.fftButton.setText(_translate("Form", "FFT"))
 from nqrduck.contrib.mplwidget import MplWidget
+from nqrduck.helpers.duckwidgets import DuckFloatEdit, DuckIntEdit
