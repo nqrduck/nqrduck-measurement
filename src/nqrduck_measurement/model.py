@@ -4,7 +4,6 @@ import logging
 from PyQt6.QtCore import pyqtSignal
 from nqrduck_spectrometer.measurement import Measurement
 from nqrduck.module.module_model import ModuleModel
-from nqrduck.helpers.validators import DuckFloatValidator, DuckIntValidator
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +117,7 @@ class MeasurementModel(ModuleModel):
     def frequency_valid(self) -> bool:
         """Check if the frequency is valid."""
         return self._frequency_valid
-    
+
     @frequency_valid.setter
     def frequency_valid(self, value: bool):
         logger.debug("Frequency valid: " + str(value))
@@ -135,11 +134,11 @@ class MeasurementModel(ModuleModel):
         self.averages_changed.emit(value)
 
     @property
-    def  averages_valid(self) -> bool:
+    def averages_valid(self) -> bool:
         """Check if the number of averages is valid."""
         logger.debug("Averages valid: " + str(self._averages_valid))
         return self._averages_valid
-    
+
     @averages_valid.setter
     def averages_valid(self, value: bool):
         self._averages_valid = value

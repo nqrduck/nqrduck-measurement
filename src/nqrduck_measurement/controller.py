@@ -5,7 +5,6 @@ import json
 import numpy as np
 from decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
-from PyQt6.QtGui import QValidator
 from PyQt6.QtWidgets import QApplication
 from nqrduck_pulseprogrammer.view import OptionsDialog
 from nqrduck_spectrometer.pulsesequence import PulseSequence

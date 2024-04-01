@@ -3,7 +3,6 @@
 import logging
 import numpy as np
 from PyQt6.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout
-from PyQt6.QtGui import QValidator
 from PyQt6.QtCore import pyqtSlot, Qt
 from nqrduck.module.module_view import ModuleView
 from nqrduck.assets.icons import Logos
