@@ -232,11 +232,11 @@ class MeasurementView(ModuleView):
             validator (QValidator): The validator to use for the widget.
         """
         if validator.validate(widget.text(), 0) == QValidator.State.Acceptable:
-            widget.setStyleSheet("QLineEdit { background-color: transparent; }")
+            widget.setStyleSheet("")
         elif validator.validate(widget.text(), 0) == QValidator.State.Intermediate:
-            widget.setStyleSheet("QLineEdit { background-color: yellow; }")
+            widget.setStyleSheet("QLineEdit { background-color: yellow;}")
         else:
-            widget.setStyleSheet("QLineEdit { background-color: red; }")
+            widget.setStyleSheet("QLineEdit { background-color: red;}")
 
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.
