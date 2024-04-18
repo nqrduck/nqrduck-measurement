@@ -22,6 +22,11 @@ You can install this module and the dependencies by running the following comman
 pip install .
 ```
 
+Alternatively, you can install the module and the dependencies by running the following command in the terminal while the virtual environment is activated:
+```bash
+pip install nqrduck-measurement
+```
+
 ## Usage
 The module is used with the [Spectrometer](https://github.com/nqrduck/nqrduck-spectrometer) module. However you need to use an actual submodule of the spectrometer module like:
 
@@ -30,7 +35,7 @@ The module is used with the [Spectrometer](https://github.com/nqrduck/nqrduck-sp
 
 The pulse sequence and spectrometer settings can be adjusted using the 'Spectrometer' tab. 
 
-<img src="docs/img/measurement_ui_labeled_v2.png" alt="drawing" width="800">
+<img src="https://github.com/nqrduck/nqrduck-measurement/raw/0b28ae6b33230c6ca9eda85bd18de7cbcade27d1/docs/img/measurement_ui_labeled_v2.png" alt="drawing" width="800">
 
 - a.) The experiments settings for frequency and number of averages.
 - b.) The signal processing settings for the measurement.
