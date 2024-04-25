@@ -2,12 +2,7 @@
 
 import sympy
 from nqrduck_spectrometer.base_spectrometer_model import BaseSpectrometerModel
-from nqrduck_spectrometer.pulseparameters import (
-    FunctionOption,
-    GaussianFunction,
-    CustomFunction,
-    Function,
-)
+from nqrduck.helpers.functions import Function, GaussianFunction, CustomFunctiony
 
 # We implement the signal processing options as PulseParamterOptions because we can then easily use the automatic UI generation
 
