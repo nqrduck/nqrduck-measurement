@@ -6,7 +6,6 @@ import numpy as np
 from decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QApplication
-from nqrduck_pulseprogrammer.view import OptionsDialog
 from nqrduck_spectrometer.pulsesequence import PulseSequence
 from .signalprocessing_options import Apodization
 from nqrduck.module.module_controller import ModuleController
@@ -223,7 +222,7 @@ class MeasurementController(ModuleController):
 
         apodized_measurement = dialog.apodization(function)
 
-        dialog = None
+        dialog.deleteLater()
 
         self.module.model.displayed_measurement = apodized_measurement
         self.module.model.add_measurement(apodized_measurement)

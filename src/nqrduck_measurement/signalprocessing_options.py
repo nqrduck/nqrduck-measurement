@@ -29,9 +29,6 @@ class Apodization(DuckFormBuilder):
 
     This parameter is used to apply apodization functions to the signal.
     The apodization functions are used to reduce the noise in the signal.
-
-    Attributes:
-        APODIZATION_FUNCTIONS (str): The name of the apodization functions option.
     """
 
     def __init__(self, measurement: Measurement, parent=None) -> None:
@@ -94,4 +91,3 @@ class Apodization(DuckFormBuilder):
         )
 
         return apodized_measurement
-        
