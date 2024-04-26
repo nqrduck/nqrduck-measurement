@@ -6,7 +6,6 @@ import numpy as np
 from decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QApplication
-from nqrduck_pulseprogrammer.view import OptionsDialog
 from nqrduck_spectrometer.pulsesequence import PulseSequence
 from .signalprocessing_options import Apodization
 from nqrduck.module.module_controller import ModuleController
@@ -211,48 +210,22 @@ class MeasurementController(ModuleController):
             )
             return
 
-        # We need to create a event which corresponds to the measurement.
-        event_duration = self.module.model.displayed_measurement.tdx[-1] * 1e-6
+        measurement = self.module.model.displayed_measurement
 
-        event = PulseSequence.Event(name="Apodization", duration=str(event_duration))
-        parameter = Apodization()
-        parameter.start_x = 0
-        parameter.end_x = event_duration
-        dialog = OptionsDialog(event, parameter, self.module.view)
+        dialog = Apodization(measurement, parent=self.module.view)
         result = dialog.exec()
 
-        if result:
-            for option, function in dialog.return_functions.items():
-                logger.debug(
-                    "Setting option %s of parameter %s in event %s to %s",
-                    option,
-                    parameter,
-                    event,
-                    function(),
-                )
-                option.set_value(function())
+        logger.debug("Dialog result: %s", result)
+        if not result:
+            return
 
-        # Get the function from the Apodization function
-        function = parameter.get_option_by_name(Apodization.APODIZATION_FUNCTIONS).value
+        function = dialog.get_function()
+
         logger.debug("Apodization function: %s", function)
 
-        # Get the y data weights from the function
-        resolution = (
-            self.module.model.displayed_measurement.tdx[1]
-            - self.module.model.displayed_measurement.tdx[0]
-        ) * 1e-6
-        y_weight = function.get_pulse_amplitude(event.duration, Decimal(resolution))
-        # Append the last point to the end of the array
-        y_weight = np.append(y_weight, y_weight[-1])
+        apodized_measurement = measurement.apodization(function)
 
-        tdy_measurement = self.module.model.displayed_measurement.tdy * y_weight
+        dialog.deleteLater()
 
-        measurement = Measurement(
-            self.module.model.displayed_measurement.tdx,
-            tdy_measurement,
-            target_frequency=self.module.model.displayed_measurement.target_frequency,
-            IF_frequency=self.module.model.displayed_measurement.IF_frequency,
-        )
-
-        self.module.model.displayed_measurement = measurement
-        self.module.model.add_measurement(measurement)
+        self.module.model.displayed_measurement = apodized_measurement
+        self.module.model.add_measurement(apodized_measurement)

@@ -1,16 +1,13 @@
 """Signal processing options."""
-
+import logging 
+from decimal import Decimal
+import numpy as np
 import sympy
-from nqrduck_spectrometer.base_spectrometer_model import BaseSpectrometerModel
-from nqrduck_spectrometer.pulseparameters import (
-    FunctionOption,
-    GaussianFunction,
-    CustomFunction,
-    Function,
-)
+from nqrduck_spectrometer.measurement import Measurement
+from nqrduck.helpers.functions import Function, GaussianFunction, CustomFunction
+from nqrduck.helpers.formbuilder import DuckFormBuilder, DuckFormFunctionSelectionField
 
-# We implement the signal processing options as PulseParamterOptions because we can then easily use the automatic UI generation
-
+logger = logging.getLogger(__name__)
 
 class FIDFunction(Function):
     """The exponetial FID function."""
@@ -27,25 +24,37 @@ class FIDFunction(Function):
         self.add_parameter(Function.Parameter("T2star (microseconds)", "T2star", 10))
 
 
-class Apodization(BaseSpectrometerModel.PulseParameter):
+class Apodization(DuckFormBuilder):
     """Apodization parameter.
 
     This parameter is used to apply apodization functions to the signal.
     The apodization functions are used to reduce the noise in the signal.
-
-    Attributes:
-        APODIZATION_FUNCTIONS (str): The name of the apodization functions option.
     """
 
-    APODIZATION_FUNCTIONS = "Apodization functions"
-
-    def __init__(self):
+    def __init__(self, measurement: Measurement, parent=None) -> None:
         """Apodization parameter."""
-        super().__init__("Apodization")
+        super().__init__("Apodization", parent=parent)
 
-        self.add_option(
-            FunctionOption(
-                self.APODIZATION_FUNCTIONS,
-                [FIDFunction(), GaussianFunction(), CustomFunction()],
-            ),
+        self.measurement = measurement
+        functions = [
+            FIDFunction(),
+            GaussianFunction(),
+            CustomFunction(),
+        ]
+
+        self.duration = (self.measurement.tdx[-1] - self.measurement.tdx[0]) * 1e-6
+
+        function_selection_field = DuckFormFunctionSelectionField(
+            text=None, tooltip=None, functions=functions, duration=self.duration, parent=parent, default_function=0
         )
+
+        self.add_field(function_selection_field)
+
+    def get_function(self) -> Function:
+        """Get the selected function.
+
+        Returns:
+            Function: The selected function.
+        """
+        return self.get_values()[0]
+    
