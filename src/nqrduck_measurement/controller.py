@@ -220,7 +220,7 @@ class MeasurementController(ModuleController):
 
         logger.debug("Apodization function: %s", function)
 
-        apodized_measurement = dialog.apodization(function)
+        apodized_measurement = measurement.apodization(function)
 
         dialog.deleteLater()
 
