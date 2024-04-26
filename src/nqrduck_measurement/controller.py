@@ -215,8 +215,11 @@ class MeasurementController(ModuleController):
         dialog = Apodization(measurement, parent=self.module.view)
         result = dialog.exec()
 
-        if result:
-            function = dialog.get_function()
+        logger.debug("Dialog result: %s", result)
+        if not result:
+            return
+
+        function = dialog.get_function()
 
         logger.debug("Apodization function: %s", function)
 

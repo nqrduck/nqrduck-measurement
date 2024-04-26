@@ -45,7 +45,7 @@ class Apodization(DuckFormBuilder):
         self.duration = (self.measurement.tdx[-1] - self.measurement.tdx[0]) * 1e-6
 
         function_selection_field = DuckFormFunctionSelectionField(
-            False, False, functions, self.duration, parent=parent, default_function=0
+            text=None, tooltip=None, functions=functions, duration=self.duration, parent=parent, default_function=0
         )
 
         self.add_field(function_selection_field)
