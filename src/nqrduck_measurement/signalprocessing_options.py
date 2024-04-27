@@ -1,13 +1,13 @@
 """Signal processing options."""
-import logging 
-from decimal import Decimal
-import numpy as np
+
+import logging
 import sympy
 from nqrduck_spectrometer.measurement import Measurement
 from nqrduck.helpers.functions import Function, GaussianFunction, CustomFunction
 from nqrduck.helpers.formbuilder import DuckFormBuilder, DuckFormFunctionSelectionField
 
 logger = logging.getLogger(__name__)
+
 
 class FIDFunction(Function):
     """The exponetial FID function."""
@@ -45,7 +45,12 @@ class Apodization(DuckFormBuilder):
         self.duration = (self.measurement.tdx[-1] - self.measurement.tdx[0]) * 1e-6
 
         function_selection_field = DuckFormFunctionSelectionField(
-            text=None, tooltip=None, functions=functions, duration=self.duration, parent=parent, default_function=0
+            text=None,
+            tooltip=None,
+            functions=functions,
+            duration=self.duration,
+            parent=parent,
+            default_function=0,
         )
 
         self.add_field(function_selection_field)
@@ -57,4 +62,3 @@ class Apodization(DuckFormBuilder):
             Function: The selected function.
         """
         return self.get_values()[0]
-    

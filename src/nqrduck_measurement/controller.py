@@ -2,11 +2,8 @@
 
 import logging
 import json
-import numpy as np
-from decimal import Decimal
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QApplication
-from nqrduck_spectrometer.pulsesequence import PulseSequence
 from .signalprocessing_options import Apodization
 from nqrduck.module.module_controller import ModuleController
 from nqrduck_spectrometer.measurement import Measurement
@@ -25,6 +22,10 @@ class MeasurementController(ModuleController):
     Attributes:
         set_frequency_failure (pyqtSignal): Signal emitted when setting the frequency fails.
         set_averages_failure (pyqtSignal): Signal emitted when setting the averages fails.
+
+    Signals:
+        set_frequency_failure: Signal emitted when setting the frequency fails.
+        set_averages_failure: Signal emitted when setting the averages fails.
     """
 
     set_frequency_failure = pyqtSignal()
@@ -156,7 +157,7 @@ class MeasurementController(ModuleController):
             self.set_averages_failure.emit()
         elif key == "active_spectrometer_changed":
             self.module.view._ui_form.spectrometerLabel.setText(
-                "Spectrometer: %s" % value
+                f"Spectrometer: {value}"
             )
 
     def save_measurement(self, file_name: str) -> None:

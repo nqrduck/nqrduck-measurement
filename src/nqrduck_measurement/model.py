@@ -33,6 +33,14 @@ class MeasurementModel(ModuleModel):
 
         validator_measurement_frequency (DuckFloatValidator): Validator for the measurement frequency.
         validator_averages (DuckIntValidator): Validator for the number of averages.
+
+    Signals:
+        displayed_measurement_changed: Signal emitted when the displayed measurement changes.
+        measurements_changed: Signal emitted when the list of measurements changes.
+        view_mode_changed: Signal emitted when the view mode changes.
+
+        measurement_frequency_changed: Signal emitted when the measurement frequency changes.
+        averages_changed: Signal emitted when the number of averages changes.
     """
 
     FILE_EXTENSION = "meas"

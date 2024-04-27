@@ -38,7 +38,7 @@ class MeasurementView(ModuleView):
         # Initialize plotter
         self.init_plotter()
         logger.debug(
-            "Facecolor %s" % str(self._ui_form.plotter.canvas.ax.get_facecolor())
+            f"Facecolor {str(self._ui_form.plotter.canvas.ax.get_facecolor())}"
         )
 
         # Measurement dialog
