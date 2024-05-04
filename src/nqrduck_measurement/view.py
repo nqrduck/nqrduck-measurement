@@ -145,9 +145,15 @@ class MeasurementView(ModuleView):
         try:
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
-                x = self.module.model.displayed_measurement.fdx
                 y = self.module.model.displayed_measurement.fdy
-                x += float(self.module.model.displayed_measurement.target_frequency - self.module.model.displayed_measurement.IF_frequency) * 1e-6
+                x = (
+                    self.module.model.displayed_measurement.fdx
+                    + float(
+                        self.module.model.displayed_measurement.target_frequency
+                        - self.module.model.displayed_measurement.IF_frequency
+                    )
+                    * 1e-6
+                )
             else:
                 self.change_to_time_view()
                 x = self.module.model.displayed_measurement.tdx
