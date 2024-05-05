@@ -251,7 +251,7 @@ class MeasurementView(ModuleView):
         """Slot for when the measurement save button is clicked."""
         logger.debug("Measurement save button clicked.")
 
-        file_manager = self.QFileManager(
+        file_manager = self.FileManager(
             self.module.model.FILE_EXTENSION, parent=self.widget
         )
         file_name = file_manager.saveFileDialog()
@@ -263,7 +263,7 @@ class MeasurementView(ModuleView):
         """Slot for when the measurement load button is clicked."""
         logger.debug("Measurement load button clicked.")
 
-        file_manager = self.QFileManager(
+        file_manager = self.FileManager(
             self.module.model.FILE_EXTENSION, parent=self.widget
         )
         file_name = file_manager.loadFileDialog()
