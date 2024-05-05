@@ -105,6 +105,11 @@ class MeasurementView(ModuleView):
         self._ui_form.averagesEdit.set_min_value(1)
         self._ui_form.averagesEdit.set_max_value(1e6)
 
+        # Connect selectionBox signal fors switching the displayed  measurement
+        self._ui_form.selectionBox.valueChanged.connect(
+            self.module.controller.change_displayed_measurement
+        )
+
     def init_plotter(self) -> None:
         """Initialize plotter with the according units for time domain."""
         plotter = self._ui_form.plotter

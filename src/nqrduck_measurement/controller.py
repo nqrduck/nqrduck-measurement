@@ -230,3 +230,14 @@ class MeasurementController(ModuleController):
 
         self.module.model.displayed_measurement = apodized_measurement
         self.module.model.add_measurement(apodized_measurement)
+
+    @pyqtSlot()
+    def change_displayed_measurement(self) -> None:
+        """Change the displayed measurement."""
+        logger.debug("Changing displayed measurement.")
+        if not self.module.model.measurements:
+            logger.debug("No measurements to display.")
+            return
+
+        index = self.module.view._ui_form.selectionBox.value()
+        self.module.model.displayed_measurement = self.module.model.measurements[index]

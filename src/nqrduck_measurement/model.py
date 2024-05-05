@@ -94,6 +94,11 @@ class MeasurementModel(ModuleModel):
     def add_measurement(self, measurement: Measurement):
         """Add a measurement to the list of measurements."""
         self.measurements.append(measurement)
+        # Change the maximum value of the selectionBox.
+        self.module.view._ui_form.selectionBox.setMaximum(len(self.measurements)-1)
+        # Set the correct value of the selectionBox.
+        self.module.view._ui_form.selectionBox.setValue(len(self.measurements)-1)
+
         self.measurements_changed.emit(self.measurements)
 
     @property
