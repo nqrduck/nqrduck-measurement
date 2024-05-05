@@ -2,7 +2,19 @@
 
 import logging
 import numpy as np
-from PyQt6.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout
+from functools import partial
+from PyQt6.QtWidgets import (
+    QWidget,
+    QDialog,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QListWidgetItem,
+    QSizePolicy,
+    QApplication,
+)
+from PyQt6.QtGui import QFontMetrics
 from PyQt6.QtCore import pyqtSlot, Qt
 from nqrduck.module.module_view import ModuleView
 from nqrduck.assets.icons import Logos
@@ -49,6 +61,8 @@ class MeasurementView(ModuleView):
             self.update_displayed_measurement
         )
         self.module.model.view_mode_changed.connect(self.update_displayed_measurement)
+
+        self.module.model.measurements_changed.connect(self.on_measurements_changed)
 
         self._ui_form.buttonStart.clicked.connect(
             self.on_measurement_start_button_clicked
@@ -105,6 +119,11 @@ class MeasurementView(ModuleView):
         self._ui_form.averagesEdit.set_min_value(1)
         self._ui_form.averagesEdit.set_max_value(1e6)
 
+        # Connect selectionBox signal fors switching the displayed  measurement
+        self._ui_form.selectionBox.valueChanged.connect(
+            self.module.controller.change_displayed_measurement
+        )
+
     def init_plotter(self) -> None:
         """Initialize plotter with the according units for time domain."""
         plotter = self._ui_form.plotter
@@ -143,6 +162,18 @@ class MeasurementView(ModuleView):
         plotter = self._ui_form.plotter
         plotter.canvas.ax.clear()
         try:
+            if self.module.model.displayed_measurement is None:
+                logger.debug("No measurement data to display. Clearing plotter.")
+                
+                if self.module.model.view_mode == self.module.model.FFT_VIEW:
+                    self.change_to_fft_view()
+                else:
+                    self.change_to_time_view()
+
+                self._ui_form.plotter.canvas.draw()
+
+                return
+            
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
                 y = self.module.model.displayed_measurement.fdy
@@ -173,6 +204,26 @@ class MeasurementView(ModuleView):
             # Add legend
             self._ui_form.plotter.canvas.ax.legend()
 
+            # Highlight the displayed measurement in the measurementsList
+            for i in range(self._ui_form.measurementsList.count()):
+                item = self._ui_form.measurementsList.item(i)
+                widget = self._ui_form.measurementsList.itemWidget(item)
+                button = widget.layout().itemAt(0).widget()
+                # Get the measurement by accessing measurement property
+                measurement = button.property("measurement")
+                if measurement == self.module.model.displayed_measurement:
+                    item.setSelected(True)
+                else:
+                    item.setSelected(False)
+
+            # Update the number of the selectionBox
+            for measurement in self.module.model.measurements:
+                if measurement.name == self.module.model.displayed_measurement.name:
+                    self._ui_form.selectionBox.setValue(
+                        self.module.model.measurements.index(measurement)
+                    )
+                    break
+
         except AttributeError:
             logger.debug("No measurement data to display.")
         self._ui_form.plotter.canvas.draw()
@@ -200,7 +251,7 @@ class MeasurementView(ModuleView):
         """Slot for when the measurement save button is clicked."""
         logger.debug("Measurement save button clicked.")
 
-        file_manager = self.QFileManager(
+        file_manager = self.FileManager(
             self.module.model.FILE_EXTENSION, parent=self.widget
         )
         file_name = file_manager.saveFileDialog()
@@ -212,12 +263,83 @@ class MeasurementView(ModuleView):
         """Slot for when the measurement load button is clicked."""
         logger.debug("Measurement load button clicked.")
 
-        file_manager = self.QFileManager(
+        file_manager = self.FileManager(
             self.module.model.FILE_EXTENSION, parent=self.widget
         )
         file_name = file_manager.loadFileDialog()
         if file_name:
             self.module.controller.load_measurement(file_name)
+
+    @pyqtSlot()
+    def on_measurements_changed(self) -> None:
+        """Slot for when a measurement is added."""
+        logger.debug("Measurement changed.")
+
+        if len(self.module.model.measurements) == 0:
+            self.module.view._ui_form.selectionBox.setMaximum(0)
+            self.module.view._ui_form.selectionBox.setValue(0)
+        else:
+            self.module.view._ui_form.selectionBox.setMaximum(
+                len(self.module.model.measurements) - 1
+            )
+
+        # Clear the measurements list
+        self._ui_form.measurementsList.clear()
+
+        for measurement in self.module.model.measurements:
+            measurement_widget = QWidget()
+            layout = QHBoxLayout()
+            measurement_widget.setLayout(layout)
+
+            delete_button = QPushButton()
+            delete_button.setIcon(Logos.Garbage12x12())
+            delete_button.setFixedWidth(delete_button.iconSize().width())
+            delete_button.clicked.connect(
+                lambda: self.module.controller.delete_measurement(measurement)
+            )
+
+            name_button = QPushButton()
+            name_button.clicked.connect(
+                partial(self.module.controller.change_displayed_measurement, measurement)
+            )
+
+            # Not sure if this is pretty
+            name_button.setProperty("measurement", measurement)
+            name_button.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            )  # Set size policy
+
+            layout.addWidget(name_button)
+            layout.addWidget(delete_button)
+            layout.addStretch()  # Add stretch after delete button to ensure name button takes up space
+
+            item = QListWidgetItem()
+            item.setSizeHint(measurement_widget.sizeHint())
+
+            self._ui_form.measurementsList.addItem(item)
+            self._ui_form.measurementsList.setItemWidget(item, measurement_widget)
+
+            # Wait for the layout to be updated
+            QApplication.processEvents()
+
+            # Get the contents margins (left, top, right, bottom)
+            content_margins = layout.contentsMargins()
+
+            # Include the margins and spacing in the maxWidth calculation
+            maxWidth = (
+                self._ui_form.measurementsList.width()
+                - delete_button.width()
+                - content_margins.left()
+                - content_margins.right()
+                - layout.spacing()
+            )
+
+            fontMetrics = QFontMetrics(name_button.font())
+            elidedText = fontMetrics.elidedText(
+                measurement.name, Qt.TextElideMode.ElideRight, maxWidth
+            )
+            name_button.setText(elidedText)
+            name_button.setToolTip(measurement.name)
 
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.
