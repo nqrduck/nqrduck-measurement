@@ -232,12 +232,41 @@ class MeasurementController(ModuleController):
         self.module.model.add_measurement(apodized_measurement)
 
     @pyqtSlot()
-    def change_displayed_measurement(self) -> None:
+    def change_displayed_measurement(self, measurement=None) -> None:
         """Change the displayed measurement."""
-        logger.debug("Changing displayed measurement.")
+
         if not self.module.model.measurements:
             logger.debug("No measurements to display.")
             return
 
-        index = self.module.view._ui_form.selectionBox.value()
-        self.module.model.displayed_measurement = self.module.model.measurements[index]
+        if not measurement:
+            index = self.module.view._ui_form.selectionBox.value()
+            self.module.model.displayed_measurement = self.module.model.measurements[
+                index
+            ]
+            logger.debug(
+                f"Changing displayed measurement to {self.module.model.displayed_measurement.name}."
+            )
+        else:
+            logger.debug(f"Changing displayed measurement to {measurement.name}.")
+            self.module.model.displayed_measurement = measurement
+
+    @pyqtSlot(Measurement)
+    def delete_measurement(self, measurement: Measurement) -> None:
+        """Delete a measurement.
+
+        The measurement is removed from the list of measurements. Then the displayed measurement is updated.
+
+        Args:
+            measurement (Measurement): The measurement to delete.
+        """
+        logger.debug("Deleting measurement.")
+        self.module.model.remove_measurement(measurement)
+
+        if measurement == self.module.model.displayed_measurement:
+            if self.module.model.measurements:
+                self.module.model.displayed_measurement = (
+                    self.module.model.measurements[-1]
+                )
+            else:
+                self.module.model.displayed_measurement = None

@@ -50,6 +50,7 @@ class MeasurementModel(ModuleModel):
 
     displayed_measurement_changed = pyqtSignal(Measurement)
     measurements_changed = pyqtSignal(list)
+    
     view_mode_changed = pyqtSignal(str)
 
     measurement_frequency_changed = pyqtSignal(float)
@@ -95,10 +96,13 @@ class MeasurementModel(ModuleModel):
         """Add a measurement to the list of measurements."""
         self.measurements.append(measurement)
         # Change the maximum value of the selectionBox.
-        self.module.view._ui_form.selectionBox.setMaximum(len(self.measurements)-1)
-        # Set the correct value of the selectionBox.
-        self.module.view._ui_form.selectionBox.setValue(len(self.measurements)-1)
+        self.measurements_changed.emit(self.measurements)
+        self.displayed_measurement_changed.emit(measurement)
 
+    def remove_measurement(self, measurement : Measurement):
+        """Remove a measurement from the list of measurements."""
+        self.measurements.remove(measurement)
+        # Change the maximum value of the selectionBox.
         self.measurements_changed.emit(self.measurements)
 
     @property
@@ -113,7 +117,12 @@ class MeasurementModel(ModuleModel):
     @displayed_measurement.setter
     def displayed_measurement(self, value: Measurement):
         self._displayed_measurement = value
-        self.displayed_measurement_changed.emit(value)
+        if value is  not None:
+            logger.debug("Displayed measurement: " + value.name)
+            self.displayed_measurement_changed.emit(value)
+        else:
+            self.module.view.update_displayed_measurement()
+
 
     @property
     def measurement_frequency(self):
