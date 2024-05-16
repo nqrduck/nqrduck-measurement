@@ -233,8 +233,13 @@ class MeasurementController(ModuleController):
 
     @pyqtSlot()
     def change_displayed_measurement(self, measurement=None) -> None:
-        """Change the displayed measurement."""
+        """Change the displayed measurement.
 
+        If no measurement is provided, the displayed measurement is changed to the selected measurement in the selection box.
+
+        Args:
+            measurement (Measurement, optional): The measurement to display. Defaults to None.
+        """
         if not self.module.model.measurements:
             logger.debug("No measurements to display.")
             return
@@ -271,7 +276,9 @@ class MeasurementController(ModuleController):
             else:
                 self.module.model.displayed_measurement = None
 
-    def edit_measurement(self, old_measurement : Measurement, new_measurement : Measurement) -> None:
+    def edit_measurement(
+        self, old_measurement: Measurement, new_measurement: Measurement
+    ) -> None:
         """Edit a measurement.
 
         Args:

@@ -409,12 +409,13 @@ class MeasurementView(ModuleView):
             super().hide()
 
     class MeasurementEdit(QDialog):
-        """This dialog is displayed when the measurement edit button is clicked. 
+        """This dialog is displayed when the measurement edit button is clicked.
         
         It allows the user to edit the measurement parameters (e.g. name, ...)
         """
 
         def __init__(self, measurement, parent = None) -> None:
+            """Initialize the dialog."""
             super().__init__(parent)
             self.setParent(parent)
 
