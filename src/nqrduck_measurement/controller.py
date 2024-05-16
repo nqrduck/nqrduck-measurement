@@ -270,3 +270,18 @@ class MeasurementController(ModuleController):
                 )
             else:
                 self.module.model.displayed_measurement = None
+
+    def edit_measurement(self, old_measurement : Measurement, new_measurement : Measurement) -> None:
+        """Edit a measurement.
+
+        Args:
+            old_measurement (Measurement): The measurement to edit.
+            new_measurement (Measurement): The new measurement.
+        """
+        logger.debug("Editing measurement.")
+        # Delete the old measurement
+        self.delete_measurement(old_measurement)
+
+        # Add the new measurement
+        self.module.model.add_measurement(new_measurement)
+        self.module.model.displayed_measurement = new_measurement

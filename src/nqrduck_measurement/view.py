@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QSizePolicy,
     QApplication,
+    QLineEdit,
 )
 from PyQt6.QtGui import QFontMetrics
 from PyQt6.QtCore import pyqtSlot, Qt
@@ -298,6 +299,13 @@ class MeasurementView(ModuleView):
                 lambda: self.module.controller.delete_measurement(measurement)
             )
 
+            edit_button = QPushButton()
+            edit_button.setIcon(Logos.Pen12x12())
+            edit_button.setFixedWidth(edit_button.iconSize().width())
+            edit_button.clicked.connect(
+                lambda: self.show_measurement_edit(measurement)
+            )
+
             name_button = QPushButton()
             name_button.clicked.connect(
                 partial(self.module.controller.change_displayed_measurement, measurement)
@@ -309,6 +317,7 @@ class MeasurementView(ModuleView):
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )  # Set size policy
 
+            layout.addWidget(edit_button)
             layout.addWidget(name_button)
             layout.addWidget(delete_button)
             layout.addStretch()  # Add stretch after delete button to ensure name button takes up space
@@ -340,6 +349,23 @@ class MeasurementView(ModuleView):
             )
             name_button.setText(elidedText)
             name_button.setToolTip(measurement.name)
+
+    def show_measurement_edit(self, measurement) -> None:
+        """Show the measurement dialog.
+
+        Args:
+            measurement (Measurement): The measurement to edit.
+        """
+        dialog = self.MeasurementEdit(measurement, parent=self)
+        result = dialog.exec()
+
+        if result == QDialog.DialogCode.Accepted:
+            logger.debug("Measurement edited.")
+            self.module.controller.edit_measurement(measurement, dialog.measurement)
+        else:
+            logger.debug("Measurement edit canceled.")
+
+
 
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.
@@ -381,3 +407,56 @@ class MeasurementView(ModuleView):
                 continue
             self.spinner_movie.stop()
             super().hide()
+
+    class MeasurementEdit(QDialog):
+        """This dialog is displayed when the measurement edit button is clicked. 
+        
+        It allows the user to edit the measurement parameters (e.g. name, ...)
+        """
+
+        def __init__(self, measurement, parent = None) -> None:
+            super().__init__(parent)
+            self.setParent(parent)
+
+            logger.debug("Edit measurement dialog started.")
+
+            self.measurement = measurement
+
+            self.setWindowTitle("Edit Measurement")
+            self.layout = QVBoxLayout(self)
+            self.setLayout(self.layout)
+
+
+            self.name_layout = QHBoxLayout()
+            self.name_label = QLabel("Name:")
+            self.name_edit = QLineEdit()
+            self.name_edit.setText(measurement.name)
+            self.name_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.name_edit.adjustSize()
+
+            self.name_layout.addWidget(self.name_label)
+            self.name_layout.addWidget(self.name_edit)
+
+            self.ok_button = QPushButton("OK")
+            self.ok_button.clicked.connect(self.on_ok_button_clicked)
+
+            self.cancel_button = QPushButton("Cancel")
+            self.cancel_button.clicked.connect(self.close)
+
+            self.layout.addLayout(self.name_layout)
+
+            button_layout = QHBoxLayout()
+            button_layout.addWidget(self.cancel_button)
+            button_layout.addWidget(self.ok_button)
+
+            self.layout.addLayout(button_layout)
+
+            # Resize the dialog
+            self.adjustSize()
+
+        def on_ok_button_clicked(self) -> None:
+            """Slot for when the OK button is clicked."""
+            logger.debug("OK button clicked.")
+            self.measurement.name = self.name_edit.text()
+            self.accept()
+            self.close()
