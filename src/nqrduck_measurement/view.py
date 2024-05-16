@@ -165,7 +165,7 @@ class MeasurementView(ModuleView):
         try:
             if self.module.model.displayed_measurement is None:
                 logger.debug("No measurement data to display. Clearing plotter.")
-                
+
                 if self.module.model.view_mode == self.module.model.FFT_VIEW:
                     self.change_to_fft_view()
                 else:
@@ -174,7 +174,7 @@ class MeasurementView(ModuleView):
                 self._ui_form.plotter.canvas.draw()
 
                 return
-            
+
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
                 y = self.module.model.displayed_measurement.fdy
@@ -302,13 +302,13 @@ class MeasurementView(ModuleView):
             edit_button = QPushButton()
             edit_button.setIcon(Logos.Pen12x12())
             edit_button.setFixedWidth(edit_button.iconSize().width())
-            edit_button.clicked.connect(
-                lambda: self.show_measurement_edit(measurement)
-            )
+            edit_button.clicked.connect(lambda: self.show_measurement_edit(measurement))
 
             name_button = QPushButton()
             name_button.clicked.connect(
-                partial(self.module.controller.change_displayed_measurement, measurement)
+                partial(
+                    self.module.controller.change_displayed_measurement, measurement
+                )
             )
 
             # Not sure if this is pretty
@@ -365,8 +365,6 @@ class MeasurementView(ModuleView):
         else:
             logger.debug("Measurement edit canceled.")
 
-
-
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.
 
@@ -410,14 +408,16 @@ class MeasurementView(ModuleView):
 
     class MeasurementEdit(QDialog):
         """This dialog is displayed when the measurement edit button is clicked.
-        
+
         It allows the user to edit the measurement parameters (e.g. name, ...)
         """
 
-        def __init__(self, measurement, parent = None) -> None:
+        def __init__(self, measurement, parent=None) -> None:
             """Initialize the dialog."""
             super().__init__(parent)
             self.setParent(parent)
+
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
             logger.debug("Edit measurement dialog started.")
 
@@ -427,12 +427,13 @@ class MeasurementView(ModuleView):
             self.layout = QVBoxLayout(self)
             self.setLayout(self.layout)
 
-
             self.name_layout = QHBoxLayout()
             self.name_label = QLabel("Name:")
-            self.name_edit = QLineEdit()
-            self.name_edit.setText(measurement.name)
-            self.name_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.name_edit = QLineEdit(measurement.name)
+            font_metrics = self.name_edit.fontMetrics()
+            self.name_edit.setFixedWidth(
+                font_metrics.horizontalAdvance(self.name_edit.text()) + 10
+            )
             self.name_edit.adjustSize()
 
             self.name_layout.addWidget(self.name_label)
