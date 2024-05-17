@@ -136,6 +136,11 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_title("Measurement data - Time domain")
         plotter.canvas.ax.grid()
 
+    @pyqtSlot()
+    def on_settings_changed(self) -> None:
+        """Redraw the plots in case the according settings have changed."""
+        self.update_displayed_measurement()
+
     def change_to_time_view(self) -> None:
         """Change plotter to time domain view."""
         plotter = self._ui_form.plotter
