@@ -94,6 +94,7 @@ class MeasurementController(ModuleController):
         """Emit the start measurement signal."""
         logger.debug("Start measurement clicked")
         self.module.view.measurement_dialog.show()
+        QApplication.processEvents()
 
         # Set the measurement parameters again in case the user switches spectrometer
         self.module.nqrduck_signal.emit(

@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
 )
 from PyQt6.QtGui import QFontMetrics
-from PyQt6.QtCore import pyqtSlot, Qt
+from PyQt6.QtCore import pyqtSlot, Qt, QTimer
 from nqrduck.module.module_view import ModuleView
 from nqrduck.assets.icons import Logos
 from nqrduck.assets.animations import DuckAnimations
@@ -55,7 +55,7 @@ class MeasurementView(ModuleView):
         )
 
         # Measurement dialog
-        self.measurement_dialog = self.MeasurementDialog()
+        self.measurement_dialog = self.MeasurementDialog(self)
 
         # Connect signals
         self.module.model.displayed_measurement_changed.connect(
@@ -379,26 +379,40 @@ class MeasurementView(ModuleView):
             finished (bool): True if the spinner movie is finished.
         """
 
-        def __init__(self):
+        def __init__(self, parent=None):
             """Initialize the dialog."""
-            super().__init__()
-            self.finished = True
+            super().__init__(parent)
+            self.setParent(parent)
+            self.finished = False
             self.setModal(True)
             self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)  # Ensure the window stays on top
 
-            self.message_label = "Measuring..."
+            self.message_label = QLabel("Measuring...")
+            # Make label bold and text larger
+            font = self.message_label.font()
+            font.setPointSize(20)
+            font.setBold(True)
+            self.message_label.setFont(font)
+
             self.spinner_movie = DuckAnimations.DuckKick128x128()
             self.spinner_label = QLabel(self)
+            # Make spinner label 
             self.spinner_label.setMovie(self.spinner_movie)
 
             self.layout = QVBoxLayout(self)
-            self.layout.addWidget(QLabel(self.message_label))
+            self.layout.addWidget(self.message_label)
             self.layout.addWidget(self.spinner_label)
 
             self.spinner_movie.finished.connect(self.on_movie_finished)
 
-            self.spinner_movie.start()
+        def show(self) -> None:
+            """Show the dialog and ensure it is raised and activated."""
+            super().show()
+            self.raise_()  # Bring the dialog to the front
+            self.activateWindow()  # Give the dialog focus
+            self.spinner_movie.start()  # Ensure the movie starts playing
 
         def on_movie_finished(self) -> None:
             """Called when the spinner movie is finished."""
@@ -406,8 +420,6 @@ class MeasurementView(ModuleView):
 
         def hide(self) -> None:
             """Hide the dialog and stop the spinner movie."""
-            while not self.finished:
-                continue
             self.spinner_movie.stop()
             super().hide()
 
