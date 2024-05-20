@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QSizePolicy,
     QApplication,
+    QLineEdit,
 )
 from PyQt6.QtGui import QFontMetrics
 from PyQt6.QtCore import pyqtSlot, Qt
@@ -54,7 +55,7 @@ class MeasurementView(ModuleView):
         )
 
         # Measurement dialog
-        self.measurement_dialog = self.MeasurementDialog()
+        self.measurement_dialog = self.MeasurementDialog(self)
 
         # Connect signals
         self.module.model.displayed_measurement_changed.connect(
@@ -135,6 +136,11 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_title("Measurement data - Time domain")
         plotter.canvas.ax.grid()
 
+    @pyqtSlot()
+    def on_settings_changed(self) -> None:
+        """Redraw the plots in case the according settings have changed."""
+        self.update_displayed_measurement()
+
     def change_to_time_view(self) -> None:
         """Change plotter to time domain view."""
         plotter = self._ui_form.plotter
@@ -164,7 +170,7 @@ class MeasurementView(ModuleView):
         try:
             if self.module.model.displayed_measurement is None:
                 logger.debug("No measurement data to display. Clearing plotter.")
-                
+
                 if self.module.model.view_mode == self.module.model.FFT_VIEW:
                     self.change_to_fft_view()
                 else:
@@ -173,7 +179,7 @@ class MeasurementView(ModuleView):
                 self._ui_form.plotter.canvas.draw()
 
                 return
-            
+
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
                 y = self.module.model.displayed_measurement.fdy
@@ -298,9 +304,16 @@ class MeasurementView(ModuleView):
                 lambda: self.module.controller.delete_measurement(measurement)
             )
 
+            edit_button = QPushButton()
+            edit_button.setIcon(Logos.Pen12x12())
+            edit_button.setFixedWidth(edit_button.iconSize().width())
+            edit_button.clicked.connect(lambda: self.show_measurement_edit(measurement))
+
             name_button = QPushButton()
             name_button.clicked.connect(
-                partial(self.module.controller.change_displayed_measurement, measurement)
+                partial(
+                    self.module.controller.change_displayed_measurement, measurement
+                )
             )
 
             # Not sure if this is pretty
@@ -309,6 +322,7 @@ class MeasurementView(ModuleView):
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )  # Set size policy
 
+            layout.addWidget(edit_button)
             layout.addWidget(name_button)
             layout.addWidget(delete_button)
             layout.addStretch()  # Add stretch after delete button to ensure name button takes up space
@@ -341,6 +355,21 @@ class MeasurementView(ModuleView):
             name_button.setText(elidedText)
             name_button.setToolTip(measurement.name)
 
+    def show_measurement_edit(self, measurement) -> None:
+        """Show the measurement dialog.
+
+        Args:
+            measurement (Measurement): The measurement to edit.
+        """
+        dialog = self.MeasurementEdit(measurement, parent=self)
+        result = dialog.exec()
+
+        if result == QDialog.DialogCode.Accepted:
+            logger.debug("Measurement edited.")
+            self.module.controller.edit_measurement(measurement, dialog.measurement)
+        else:
+            logger.debug("Measurement edit canceled.")
+
     class MeasurementDialog(QDialog):
         """This Dialog is shown when the measurement is started and therefore blocks the main window.
 
@@ -350,26 +379,40 @@ class MeasurementView(ModuleView):
             finished (bool): True if the spinner movie is finished.
         """
 
-        def __init__(self):
+        def __init__(self, parent=None):
             """Initialize the dialog."""
-            super().__init__()
-            self.finished = True
+            super().__init__(parent)
+            self.setParent(parent)
+            self.finished = False
             self.setModal(True)
             self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)  # Ensure the window stays on top
 
-            self.message_label = "Measuring..."
+            self.message_label = QLabel("Measuring...")
+            # Make label bold and text larger
+            font = self.message_label.font()
+            font.setPointSize(20)
+            font.setBold(True)
+            self.message_label.setFont(font)
+
             self.spinner_movie = DuckAnimations.DuckKick128x128()
             self.spinner_label = QLabel(self)
+            # Make spinner label 
             self.spinner_label.setMovie(self.spinner_movie)
 
             self.layout = QVBoxLayout(self)
-            self.layout.addWidget(QLabel(self.message_label))
+            self.layout.addWidget(self.message_label)
             self.layout.addWidget(self.spinner_label)
 
             self.spinner_movie.finished.connect(self.on_movie_finished)
 
-            self.spinner_movie.start()
+        def show(self) -> None:
+            """Show the dialog and ensure it is raised and activated."""
+            super().show()
+            self.raise_()  # Bring the dialog to the front
+            self.activateWindow()  # Give the dialog focus
+            self.spinner_movie.start()  # Ensure the movie starts playing
 
         def on_movie_finished(self) -> None:
             """Called when the spinner movie is finished."""
@@ -377,7 +420,62 @@ class MeasurementView(ModuleView):
 
         def hide(self) -> None:
             """Hide the dialog and stop the spinner movie."""
-            while not self.finished:
-                continue
             self.spinner_movie.stop()
             super().hide()
+
+    class MeasurementEdit(QDialog):
+        """This dialog is displayed when the measurement edit button is clicked.
+
+        It allows the user to edit the measurement parameters (e.g. name, ...)
+        """
+
+        def __init__(self, measurement, parent=None) -> None:
+            """Initialize the dialog."""
+            super().__init__(parent)
+            self.setParent(parent)
+
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+            logger.debug("Edit measurement dialog started.")
+
+            self.measurement = measurement
+
+            self.setWindowTitle("Edit Measurement")
+            self.layout = QVBoxLayout(self)
+            self.setLayout(self.layout)
+
+            self.name_layout = QHBoxLayout()
+            self.name_label = QLabel("Name:")
+            self.name_edit = QLineEdit(measurement.name)
+            font_metrics = self.name_edit.fontMetrics()
+            self.name_edit.setFixedWidth(
+                font_metrics.horizontalAdvance(self.name_edit.text()) + 10
+            )
+            self.name_edit.adjustSize()
+
+            self.name_layout.addWidget(self.name_label)
+            self.name_layout.addWidget(self.name_edit)
+
+            self.ok_button = QPushButton("OK")
+            self.ok_button.clicked.connect(self.on_ok_button_clicked)
+
+            self.cancel_button = QPushButton("Cancel")
+            self.cancel_button.clicked.connect(self.close)
+
+            self.layout.addLayout(self.name_layout)
+
+            button_layout = QHBoxLayout()
+            button_layout.addWidget(self.cancel_button)
+            button_layout.addWidget(self.ok_button)
+
+            self.layout.addLayout(button_layout)
+
+            # Resize the dialog
+            self.adjustSize()
+
+        def on_ok_button_clicked(self) -> None:
+            """Slot for when the OK button is clicked."""
+            logger.debug("OK button clicked.")
+            self.measurement.name = self.name_edit.text()
+            self.accept()
+            self.close()
