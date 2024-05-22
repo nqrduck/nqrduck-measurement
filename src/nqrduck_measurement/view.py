@@ -89,6 +89,10 @@ class MeasurementView(ModuleView):
             self.module.controller.show_apodization_dialog
         )
 
+        self._ui_form.fittingButton.clicked.connect(
+            self.module.controller.show_fitting_dialog
+        )
+
         # Add logos
         self._ui_form.buttonStart.setIcon(Logos.Play_16x16())
         self._ui_form.buttonStart.setIconSize(self._ui_form.buttonStart.size())
@@ -120,7 +124,7 @@ class MeasurementView(ModuleView):
         self._ui_form.averagesEdit.set_min_value(1)
         self._ui_form.averagesEdit.set_max_value(1e6)
 
-        # Connect selectionBox signal fors switching the displayed  measurement
+        # Connect selectionBox signal for switching the displayed  measurement
         self._ui_form.selectionBox.valueChanged.connect(
             self.module.controller.change_displayed_measurement
         )
@@ -207,6 +211,9 @@ class MeasurementView(ModuleView):
                 x, np.abs(y), label="Magnitude", color="blue"
             )
 
+            # Plot fits
+            self.plot_fits()
+
             # Add legend
             self._ui_form.plotter.canvas.ax.legend()
 
@@ -230,9 +237,41 @@ class MeasurementView(ModuleView):
                     )
                     break
 
-        except AttributeError:
-            logger.debug("No measurement data to display.")
+        except AttributeError as e:
+            logger.debug(f"No measurement data to display: {e}")
+
         self._ui_form.plotter.canvas.draw()
+
+    def plot_fits(self):
+        """Plots the according fits to the displayed measurement if there are any and if the view mode is correct."""
+        measurement = self.module.model.displayed_measurement
+
+        if not measurement.fits:
+            logger.debug("No fits to plot.")
+            return
+        
+        for fit in measurement.fits:
+            logger.debug(f"Plotting fit {fit.name}.")
+            if fit.domain == self.module.model.view_mode:
+                x = fit.x
+                y = fit.y
+                self._ui_form.plotter.canvas.ax.plot(x, y, label=f"{fit.name} Fit", color="black", linestyle="--")
+
+                # Add the parameters to the plot
+                offset = 0
+                for name, value in fit.parameters.items():
+                    if name == "covariance":
+                        continue
+
+                    # Only two digits after the comma
+                    value = round(value, 2)
+
+                    self._ui_form.plotter.canvas.ax.text(
+                        max(x) / 90,
+                        max(y)/2 + offset,
+                        f"{name}: {value}",
+                    )
+                    offset += max(y)/10
 
     @pyqtSlot()
     def on_measurement_start_button_clicked(self) -> None:
