@@ -256,8 +256,6 @@ class MeasurementController(ModuleController):
 
         logger.debug("Fitting function: %s", fit)
 
-        params = fit.fit()
-
         measurement.add_fit(fit)
 
         self.module.view.update_displayed_measurement()

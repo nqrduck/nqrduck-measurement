@@ -256,7 +256,7 @@ class MeasurementView(ModuleView):
                 x = fit.x
                 y = fit.y
                 self._ui_form.plotter.canvas.ax.plot(
-                    x, y, label=f"{fit.name} Fit", color="black", linestyle="--"
+                    x, y, label=f"{fit.name} Fit", linestyle="--"
                 )
 
                 # Add the parameters to the plot
@@ -299,7 +299,7 @@ class MeasurementView(ModuleView):
         logger.debug("Measurement save button clicked.")
 
         file_manager = self.FileManager(
-            self.module.model.FILE_EXTENSION, parent=self.widget
+            self.module.model.FILE_EXTENSION, parent=self
         )
         file_name = file_manager.saveFileDialog()
         if file_name:
@@ -311,7 +311,7 @@ class MeasurementView(ModuleView):
         logger.debug("Measurement load button clicked.")
 
         file_manager = self.FileManager(
-            self.module.model.FILE_EXTENSION, parent=self.widget
+            self.module.model.FILE_EXTENSION, parent=self
         )
         file_name = file_manager.loadFileDialog()
         if file_name:
@@ -468,7 +468,9 @@ class MeasurementView(ModuleView):
 
     class MeasurementEdit(QDialog):
         """This dialog is displayed when the measurement edit button is clicked.
-        It allows the user to edit the measurement parameters (e.g. name, ...)."""
+        
+        It allows the user to edit the measurement parameters (e.g. name, ...).
+        """
 
         def __init__(self, measurement, parent=None) -> None:
             """Initialize the dialog."""

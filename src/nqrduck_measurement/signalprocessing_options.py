@@ -8,7 +8,6 @@ from nqrduck.helpers.formbuilder import (
     DuckFormBuilder,
     DuckFormFunctionSelectionField,
     DuckFormDropdownField,
-    DuckLabelField,
 )
 
 logger = logging.getLogger(__name__)
