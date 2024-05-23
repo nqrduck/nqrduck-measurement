@@ -45,7 +45,7 @@ class MeasurementModel(ModuleModel):
 
     FILE_EXTENSION = "meas"
     # This constants are used to determine which view is currently displayed.
-    FFT_VIEW = "fft"
+    FFT_VIEW = "frequency"
     TIME_VIEW = "time"
 
     displayed_measurement_changed = pyqtSignal(Measurement)

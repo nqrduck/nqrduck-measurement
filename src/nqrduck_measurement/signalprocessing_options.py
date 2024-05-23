@@ -2,7 +2,7 @@
 
 import logging
 import sympy
-from nqrduck_spectrometer.measurement import Measurement, Fit, T2StarFit
+from nqrduck_spectrometer.measurement import Measurement, Fit, T2StarFit, LorentzianFit
 from nqrduck.helpers.functions import Function, GaussianFunction, CustomFunction
 from nqrduck.helpers.formbuilder import (
     DuckFormBuilder,
@@ -26,22 +26,6 @@ class FIDFunction(Function):
         self.end_x = 30
 
         self.add_parameter(Function.Parameter("T2star (microseconds)", "T2star", 10))
-
-
-class LorentzianFunction(Function):
-    """The Lorentzian function."""
-
-    name = "Lorentzian"
-
-    def __init__(self) -> None:
-        """Lorentzian function."""
-        expr = sympy.sympify("1 / (1 + (x / T2star)^2)")
-        super().__init__(expr)
-        self.start_x = 0
-        self.end_x = 30
-
-        self.add_parameter(Function.Parameter("T2star (microseconds)", "T2star", 10))
-
 
 class Apodization(DuckFormBuilder):
     """Apodization parameter.
@@ -100,6 +84,7 @@ class Fitting(DuckFormBuilder):
 
         fits = {}
         fits["T2*"] = T2StarFit(self.measurement)
+        fits["Lorentzian"] = LorentzianFit(self.measurement)
 
         selection_field = DuckFormDropdownField(
             text=None,

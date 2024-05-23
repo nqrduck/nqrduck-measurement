@@ -251,10 +251,16 @@ class MeasurementView(ModuleView):
             return
 
         for fit in measurement.fits:
-            logger.debug(f"Plotting fit {fit.name}.")
             if fit.domain == self.module.model.view_mode:
+                logger.debug(f"Plotting {fit.name} fit in domain {fit.domain}.")
                 x = fit.x
                 y = fit.y
+                # Shift the x values if the view mode is FFT
+                if fit.domain == self.module.model.FFT_VIEW:
+                    x = x + float(
+                        measurement.target_frequency - measurement.IF_frequency
+                    ) * 1e-6
+
                 self._ui_form.plotter.canvas.ax.plot(
                     x, y, label=f"{fit.name} Fit", linestyle="--"
                 )
