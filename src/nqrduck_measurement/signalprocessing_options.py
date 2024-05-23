@@ -70,6 +70,8 @@ class Apodization(DuckFormBuilder):
             duration=self.duration,
             parent=parent,
             default_function=0,
+            view_mode="time",
+            mode_selection=0,
         )
 
         self.add_field(function_selection_field)
