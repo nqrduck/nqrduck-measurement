@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.6 (27-05-2024)
+
+- Added fitting functions to the measurement module (`dca1c6816f0697ca3c6827fd07a0236a3189b922`).
+
 ## Version 0.0.5 (20-05-2024)
 
 - Fixed measurement dialog not showing in wayland (`f5705e4efcbaf1aa0efd558b1ec1dacf42a53944`)

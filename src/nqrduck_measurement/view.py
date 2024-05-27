@@ -89,6 +89,10 @@ class MeasurementView(ModuleView):
             self.module.controller.show_apodization_dialog
         )
 
+        self._ui_form.fittingButton.clicked.connect(
+            self.module.controller.show_fitting_dialog
+        )
+
         # Add logos
         self._ui_form.buttonStart.setIcon(Logos.Play_16x16())
         self._ui_form.buttonStart.setIconSize(self._ui_form.buttonStart.size())
@@ -120,7 +124,7 @@ class MeasurementView(ModuleView):
         self._ui_form.averagesEdit.set_min_value(1)
         self._ui_form.averagesEdit.set_max_value(1e6)
 
-        # Connect selectionBox signal fors switching the displayed  measurement
+        # Connect selectionBox signal for switching the displayed  measurement
         self._ui_form.selectionBox.valueChanged.connect(
             self.module.controller.change_displayed_measurement
         )
@@ -207,6 +211,9 @@ class MeasurementView(ModuleView):
                 x, np.abs(y), label="Magnitude", color="blue"
             )
 
+            # Plot fits
+            self.plot_fits()
+
             # Add legend
             self._ui_form.plotter.canvas.ax.legend()
 
@@ -230,9 +237,49 @@ class MeasurementView(ModuleView):
                     )
                     break
 
-        except AttributeError:
-            logger.debug("No measurement data to display.")
+        except AttributeError as e:
+            logger.debug(f"No measurement data to display: {e}")
+
         self._ui_form.plotter.canvas.draw()
+
+    def plot_fits(self):
+        """Plots the according fits to the displayed measurement if there are any and if the view mode is correct."""
+        measurement = self.module.model.displayed_measurement
+
+        if not measurement.fits:
+            logger.debug("No fits to plot.")
+            return
+
+        for fit in measurement.fits:
+            if fit.domain == self.module.model.view_mode:
+                logger.debug(f"Plotting {fit.name} fit in domain {fit.domain}.")
+                x = fit.x
+                y = fit.y
+                # Shift the x values if the view mode is FFT
+                if fit.domain == self.module.model.FFT_VIEW:
+                    x = x + float(
+                        measurement.target_frequency - measurement.IF_frequency
+                    ) * 1e-6
+
+                self._ui_form.plotter.canvas.ax.plot(
+                    x, y, label=f"{fit.name} Fit", linestyle="--"
+                )
+
+                # Add the parameters to the plot
+                offset = 0
+                for name, value in fit.parameters.items():
+                    if name == "covariance":
+                        continue
+
+                    # Only two digits after the comma
+                    value = round(value, 2)
+
+                    self._ui_form.plotter.canvas.ax.text(
+                        max(x) / 90,
+                        max(y) / 2 + offset,
+                        f"{name}: {value}",
+                    )
+                    offset += max(y) / 10
 
     @pyqtSlot()
     def on_measurement_start_button_clicked(self) -> None:
@@ -258,7 +305,7 @@ class MeasurementView(ModuleView):
         logger.debug("Measurement save button clicked.")
 
         file_manager = self.FileManager(
-            self.module.model.FILE_EXTENSION, parent=self.widget
+            self.module.model.FILE_EXTENSION, parent=self
         )
         file_name = file_manager.saveFileDialog()
         if file_name:
@@ -270,7 +317,7 @@ class MeasurementView(ModuleView):
         logger.debug("Measurement load button clicked.")
 
         file_manager = self.FileManager(
-            self.module.model.FILE_EXTENSION, parent=self.widget
+            self.module.model.FILE_EXTENSION, parent=self
         )
         file_name = file_manager.loadFileDialog()
         if file_name:
@@ -387,7 +434,9 @@ class MeasurementView(ModuleView):
             self.setModal(True)
             self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)  # Ensure the window stays on top
+            self.setWindowFlag(
+                Qt.WindowType.WindowStaysOnTopHint
+            )  # Ensure the window stays on top
 
             self.message_label = QLabel("Measuring...")
             # Make label bold and text larger
@@ -398,7 +447,7 @@ class MeasurementView(ModuleView):
 
             self.spinner_movie = DuckAnimations.DuckKick128x128()
             self.spinner_label = QLabel(self)
-            # Make spinner label 
+            # Make spinner label
             self.spinner_label.setMovie(self.spinner_movie)
 
             self.layout = QVBoxLayout(self)
@@ -425,8 +474,8 @@ class MeasurementView(ModuleView):
 
     class MeasurementEdit(QDialog):
         """This dialog is displayed when the measurement edit button is clicked.
-
-        It allows the user to edit the measurement parameters (e.g. name, ...)
+        
+        It allows the user to edit the measurement parameters (e.g. name, ...).
         """
 
         def __init__(self, measurement, parent=None) -> None:
@@ -435,43 +484,105 @@ class MeasurementView(ModuleView):
             self.setParent(parent)
 
             self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
             logger.debug("Edit measurement dialog started.")
 
             self.measurement = measurement
-
             self.setWindowTitle("Edit Measurement")
+
             self.layout = QVBoxLayout(self)
             self.setLayout(self.layout)
 
+            self.setup_name_section()
+            self.setup_fit_section()
+            self.setup_buttons()
+
+            # Resize the dialog
+            self.adjustSize()
+
+        def setup_name_section(self):
+            """Sets up the name layout section."""
             self.name_layout = QHBoxLayout()
             self.name_label = QLabel("Name:")
-            self.name_edit = QLineEdit(measurement.name)
+
+            self.name_edit = QLineEdit(self.measurement.name)
             font_metrics = self.name_edit.fontMetrics()
-            self.name_edit.setFixedWidth(
-                font_metrics.horizontalAdvance(self.name_edit.text()) + 10
-            )
+            self.name_edit.setFixedWidth(font_metrics.horizontalAdvance(
+                self.name_edit.text()) + 10)
             self.name_edit.adjustSize()
 
             self.name_layout.addWidget(self.name_label)
             self.name_layout.addWidget(self.name_edit)
+            self.layout.addLayout(self.name_layout)
 
+        def setup_fit_section(self):
+            """Sets up the fit layout section."""
+            self.fit_layout = QVBoxLayout()
+            self.update_fit_info()
+            self.layout.addLayout(self.fit_layout)
+
+        def setup_buttons(self):
+            """Sets up the OK and Cancel buttons."""
             self.ok_button = QPushButton("OK")
             self.ok_button.clicked.connect(self.on_ok_button_clicked)
 
             self.cancel_button = QPushButton("Cancel")
             self.cancel_button.clicked.connect(self.close)
 
-            self.layout.addLayout(self.name_layout)
-
             button_layout = QHBoxLayout()
             button_layout.addWidget(self.cancel_button)
             button_layout.addWidget(self.ok_button)
-
             self.layout.addLayout(button_layout)
 
-            # Resize the dialog
-            self.adjustSize()
+        def update_fit_info(self) -> None:
+            """Adds the associated fits to the dialog."""
+            # Clear the layout from previous fits
+            while self.fit_layout.count():
+                item = self.fit_layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+                elif item.layout():
+                    self.clearLayout(item.layout())
+
+            if not self.measurement.fits:
+                logger.debug("No fits to display.")
+                return
+
+            # Adds the fit information
+            fit_label = QLabel("Fits:")
+            self.fit_layout.addWidget(fit_label)
+
+            for fit in self.measurement.fits:
+                specific_fit_layout = QHBoxLayout()
+                specific_fit_layout.addStretch()
+                logger.debug(f"Fit: {fit.name}")
+
+                fit_name_edit = QLineEdit(fit.name)
+                fit_name_edit.textChanged.connect(
+                    lambda text, fit=fit: self.measurement.edit_fit_name(fit, text)
+                )
+
+                fit_delete_button = QPushButton()
+                fit_delete_button.setIcon(Logos.Garbage12x12())
+                fit_delete_button.clicked.connect(partial(self.on_delete_fit, fit))
+
+                specific_fit_layout.addWidget(fit_name_edit)
+                specific_fit_layout.addWidget(fit_delete_button)
+                self.fit_layout.addLayout(specific_fit_layout)
+
+        def clearLayout(self, layout):
+            """Clears all items in the given layout."""
+            while layout.count():
+                item = layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+                elif item.layout():
+                    self.clearLayout(item.layout())
+
+        def on_delete_fit(self, fit) -> None:
+            """Slot for when the delete fit button is clicked."""
+            logger.debug(f"Delete fit {fit.name}.")
+            self.measurement.delete_fit(fit)
+            self.update_fit_info()  # Update the dialog with the changes
 
         def on_ok_button_clicked(self) -> None:
             """Slot for when the OK button is clicked."""
@@ -479,3 +590,4 @@ class MeasurementView(ModuleView):
             self.measurement.name = self.name_edit.text()
             self.accept()
             self.close()
+

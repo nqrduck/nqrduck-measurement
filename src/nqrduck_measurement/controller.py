@@ -4,7 +4,7 @@ import logging
 import json
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QApplication
-from .signalprocessing_options import Apodization
+from .signalprocessing_options import Apodization, Fitting
 from nqrduck.module.module_controller import ModuleController
 from nqrduck_spectrometer.measurement import Measurement
 
@@ -231,6 +231,36 @@ class MeasurementController(ModuleController):
 
         self.module.model.displayed_measurement = apodized_measurement
         self.module.model.add_measurement(apodized_measurement)
+    
+    def show_fitting_dialog(self) -> None:
+        """Show fitting dialog."""
+        logger.debug("Showing fitting dialog.")
+        # First we  check if there is a measurement.
+        if not self.module.model.displayed_measurement:
+            logger.debug("No measurement to fit.")
+            self.module.nqrduck_signal.emit(
+                "notification", ["Error", "No measurement to fit."]
+            )
+            return
+
+        measurement = self.module.model.displayed_measurement
+
+        dialog = Fitting(measurement, parent=self.module.view)
+        result = dialog.exec()
+
+        logger.debug("Dialog result: %s", result)
+        if not result:
+            return
+
+        fit = dialog.get_fit()[1]
+
+        logger.debug("Fitting function: %s", fit)
+
+        measurement.add_fit(fit)
+
+        self.module.view.update_displayed_measurement()
+
+        dialog.deleteLater()
 
     @pyqtSlot()
     def change_displayed_measurement(self, measurement=None) -> None:
