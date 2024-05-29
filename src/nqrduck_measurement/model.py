@@ -2,7 +2,7 @@
 
 import logging
 from PyQt6.QtCore import pyqtSignal
-from nqrduck_spectrometer.measurement import Measurement
+from quackseq.measurement import Measurement
 from nqrduck.module.module_model import ModuleModel
 
 logger = logging.getLogger(__name__)

@@ -30,6 +30,7 @@ dependencies = [
     "nqrduck",
     "nqrduck-pulseprogrammer",
     "nqrduck-spectrometer",
+    "quackseq",
 ]
 
 [project.optional-dependencies]

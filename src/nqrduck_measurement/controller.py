@@ -4,9 +4,11 @@ import logging
 import json
 from PyQt6.QtCore import pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QApplication
-from .signalprocessing_options import Apodization, Fitting
+
 from nqrduck.module.module_controller import ModuleController
-from nqrduck_spectrometer.measurement import Measurement
+from quackseq.measurement import Measurement
+
+from .signalprocessing_options import Apodization, Fitting
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +233,7 @@ class MeasurementController(ModuleController):
 
         self.module.model.displayed_measurement = apodized_measurement
         self.module.model.add_measurement(apodized_measurement)
-    
+
     def show_fitting_dialog(self) -> None:
         """Show fitting dialog."""
         logger.debug("Showing fitting dialog.")

@@ -2,8 +2,8 @@
 
 import logging
 import sympy
-from nqrduck_spectrometer.measurement import Measurement, Fit, T2StarFit, LorentzianFit
-from nqrduck.helpers.functions import Function, GaussianFunction, CustomFunction
+from quackseq.measurement import Measurement, Fit, T2StarFit, LorentzianFit
+from quackseq.functions import Function, GaussianFunction, CustomFunction
 from nqrduck.helpers.formbuilder import (
     DuckFormBuilder,
     DuckFormFunctionSelectionField,
