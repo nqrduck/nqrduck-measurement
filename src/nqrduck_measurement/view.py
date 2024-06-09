@@ -186,9 +186,9 @@ class MeasurementView(ModuleView):
 
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
-                y = self.module.model.displayed_measurement.fdy
+                y = self.module.model.displayed_measurement.fdy[0]
                 x = (
-                    self.module.model.displayed_measurement.fdx
+                    self.module.model.displayed_measurement.fdx[0]
                     + float(
                         self.module.model.displayed_measurement.target_frequency
                         - self.module.model.displayed_measurement.IF_frequency
@@ -197,8 +197,8 @@ class MeasurementView(ModuleView):
                 )
             else:
                 self.change_to_time_view()
-                x = self.module.model.displayed_measurement.tdx
-                y = self.module.model.displayed_measurement.tdy
+                x = self.module.model.displayed_measurement.tdx[0]
+                y = self.module.model.displayed_measurement.tdy[0]
 
             self._ui_form.plotter.canvas.ax.plot(
                 x, y.real, label="Real", linestyle="-", alpha=0.35, color="red"
