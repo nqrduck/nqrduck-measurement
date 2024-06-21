@@ -133,7 +133,6 @@ class MeasurementController(ModuleController):
             and self.module.view.measurement_dialog.isVisible()
         ):
             logger.debug("Received single measurement.")
-            self.module.model.displayed_measurement = value
             self.module.model.add_measurement(value)
             self.module.view.measurement_dialog.hide()
 
@@ -264,30 +263,47 @@ class MeasurementController(ModuleController):
 
         dialog.deleteLater()
 
-    @pyqtSlot()
-    def change_displayed_measurement(self, measurement=None) -> None:
+    @pyqtSlot(Measurement)
+    def change_displayed_measurement(self, measurement) -> None:
         """Change the displayed measurement.
 
         If no measurement is provided, the displayed measurement is changed to the selected measurement in the selection box.
 
         Args:
-            measurement (Measurement, optional): The measurement to display. Defaults to None.
+            measurement (Measurement, optional): The measurement to display.
         """
+        logger.debug("Changing displayed measurement.")
         if not self.module.model.measurements:
             logger.debug("No measurements to display.")
             return
+        
+        self.module.model.displayed_measurement = measurement
 
-        if not measurement:
-            index = self.module.view._ui_form.selectionBox.value()
-            self.module.model.displayed_measurement = self.module.model.measurements[
-                index
-            ]
-            logger.debug(
-                f"Changing displayed measurement to {self.module.model.displayed_measurement.name}."
-            )
-        else:
-            logger.debug(f"Changing displayed measurement to {measurement.name}.")
-            self.module.model.displayed_measurement = measurement
+        # Adjust the min and max value of the selection box
+        n_datasets = len(measurement.tdx)
+        self.module.view._ui_form.selectionBox.setRange(0, n_datasets - 1)
+
+        logger.debug(f"Number of datasets: {n_datasets}")
+
+        self.module.model.dataset_index = n_datasets - 1
+
+        self.module.view.update_displayed_measurement()
+
+    @pyqtSlot()
+    def change_displayed_dataset(self) -> None:
+        """Change the displayed dataset.
+
+        If no dataset is provided, the displayed dataset is changed to the selected dataset in the selection box.
+        """
+        logger.debug("Changing displayed dataset.")
+        if not self.module.model.displayed_measurement:
+            logger.debug("No measurement to display.")
+            return
+
+        index = self.module.view._ui_form.selectionBox.value()
+        self.module.model.dataset_index = index
+
+        self.module.view.update_displayed_measurement()
 
     @pyqtSlot(Measurement)
     def delete_measurement(self, measurement: Measurement) -> None:
