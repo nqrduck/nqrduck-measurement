@@ -280,7 +280,7 @@ class MeasurementController(ModuleController):
         self.module.model.displayed_measurement = measurement
 
         # Adjust the min and max value of the selection box
-        n_datasets = len(measurement.tdx)
+        n_datasets = measurement.tdy.shape[1]
         self.module.view._ui_form.selectionBox.setRange(0, n_datasets - 1)
 
         logger.debug(f"Number of datasets: {n_datasets}")

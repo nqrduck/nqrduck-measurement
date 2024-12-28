@@ -187,9 +187,9 @@ class MeasurementView(ModuleView):
             logger.debug(f"Displaying dataset index {index}.")
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
-                y = self.module.model.displayed_measurement.fdy[index]
+                y = self.module.model.displayed_measurement.fdy[:, index]
                 x = (
-                    self.module.model.displayed_measurement.fdx[index]
+                    self.module.model.displayed_measurement.fdx
                     + float(
                         self.module.model.displayed_measurement.target_frequency
                         - self.module.model.displayed_measurement.IF_frequency
@@ -198,8 +198,8 @@ class MeasurementView(ModuleView):
                 )
             else:
                 self.change_to_time_view()
-                x = self.module.model.displayed_measurement.tdx[index]
-                y = self.module.model.displayed_measurement.tdy[index]
+                x = self.module.model.displayed_measurement.tdx
+                y = self.module.model.displayed_measurement.tdy[:, index]
 
             self._ui_form.plotter.canvas.ax.plot(
                 x, y.real, label="Real", linestyle="-", alpha=0.35, color="red"
