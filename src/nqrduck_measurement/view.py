@@ -232,6 +232,8 @@ class MeasurementView(ModuleView):
 
         except AttributeError as e:
             logger.debug(f"No measurement data to display: {e}")
+            # Reset the plotter
+            self.init_plotter()
 
         self._ui_form.plotter.canvas.draw()
 
