@@ -2,7 +2,7 @@
 
 import logging
 from PyQt6.QtCore import pyqtSignal
-from nqrduck_spectrometer.measurement import Measurement
+from quackseq.measurement import Measurement
 from nqrduck.module.module_model import ModuleModel
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class MeasurementModel(ModuleModel):
 
     displayed_measurement_changed = pyqtSignal(Measurement)
     measurements_changed = pyqtSignal(list)
-    
+
     view_mode_changed = pyqtSignal(str)
 
     measurement_frequency_changed = pyqtSignal(float)
@@ -65,9 +65,12 @@ class MeasurementModel(ModuleModel):
 
         self.measurement_frequency = 100.0  # MHz
         self.averages = 1
+        self.dataset_index = 0
 
         self.frequency_valid = False
         self.averages_valid = False
+
+        self.dataset_index = 0
 
     @property
     def view_mode(self) -> str:
@@ -97,9 +100,10 @@ class MeasurementModel(ModuleModel):
         self.measurements.append(measurement)
         # Change the maximum value of the selectionBox.
         self.measurements_changed.emit(self.measurements)
+        self.displayed_measurement = measurement
         self.displayed_measurement_changed.emit(measurement)
 
-    def remove_measurement(self, measurement : Measurement):
+    def remove_measurement(self, measurement: Measurement):
         """Remove a measurement from the list of measurements."""
         self.measurements.remove(measurement)
         # Change the maximum value of the selectionBox.
@@ -117,12 +121,6 @@ class MeasurementModel(ModuleModel):
     @displayed_measurement.setter
     def displayed_measurement(self, value: Measurement):
         self._displayed_measurement = value
-        if value is  not None:
-            logger.debug("Displayed measurement: " + value.name)
-            self.displayed_measurement_changed.emit(value)
-        else:
-            self.module.view.update_displayed_measurement()
-
 
     @property
     def measurement_frequency(self):
@@ -164,3 +162,15 @@ class MeasurementModel(ModuleModel):
     @averages_valid.setter
     def averages_valid(self, value: bool):
         self._averages_valid = value
+
+    @property
+    def dataset_index(self) -> int:
+        """Index of the displayed dataset.
+
+        Every measurement has a number of different data sets associated with it. This index is used to select the data set that is displayed.
+        """
+        return self._dataset_index
+
+    @dataset_index.setter
+    def dataset_index(self, value: int):
+        self._dataset_index = value

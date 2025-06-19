@@ -59,7 +59,7 @@ class MeasurementView(ModuleView):
 
         # Connect signals
         self.module.model.displayed_measurement_changed.connect(
-            self.update_displayed_measurement
+            self.module.controller.change_displayed_measurement
         )
         self.module.model.view_mode_changed.connect(self.update_displayed_measurement)
 
@@ -126,7 +126,7 @@ class MeasurementView(ModuleView):
 
         # Connect selectionBox signal for switching the displayed  measurement
         self._ui_form.selectionBox.valueChanged.connect(
-            self.module.controller.change_displayed_measurement
+            self.module.controller.change_displayed_dataset
         )
 
     def init_plotter(self) -> None:
@@ -165,7 +165,6 @@ class MeasurementView(ModuleView):
         plotter.canvas.ax.set_title("Measurement data - Frequency domain")
         plotter.canvas.ax.grid()
 
-    @pyqtSlot()
     def update_displayed_measurement(self) -> None:
         """Update displayed measurement data."""
         logger.debug("Updating displayed measurement view.")
@@ -184,9 +183,11 @@ class MeasurementView(ModuleView):
 
                 return
 
+            index = self.module.model.dataset_index
+            logger.debug(f"Displaying dataset index {index}.")
             if self.module.model.view_mode == self.module.model.FFT_VIEW:
                 self.change_to_fft_view()
-                y = self.module.model.displayed_measurement.fdy
+                y = self.module.model.displayed_measurement.fdy[:, index]
                 x = (
                     self.module.model.displayed_measurement.fdx
                     + float(
@@ -198,7 +199,7 @@ class MeasurementView(ModuleView):
             else:
                 self.change_to_time_view()
                 x = self.module.model.displayed_measurement.tdx
-                y = self.module.model.displayed_measurement.tdy
+                y = self.module.model.displayed_measurement.tdy[:, index]
 
             self._ui_form.plotter.canvas.ax.plot(
                 x, y.real, label="Real", linestyle="-", alpha=0.35, color="red"
@@ -229,16 +230,10 @@ class MeasurementView(ModuleView):
                 else:
                     item.setSelected(False)
 
-            # Update the number of the selectionBox
-            for measurement in self.module.model.measurements:
-                if measurement.name == self.module.model.displayed_measurement.name:
-                    self._ui_form.selectionBox.setValue(
-                        self.module.model.measurements.index(measurement)
-                    )
-                    break
-
         except AttributeError as e:
             logger.debug(f"No measurement data to display: {e}")
+            # Reset the plotter
+            self.init_plotter()
 
         self._ui_form.plotter.canvas.draw()
 
@@ -327,14 +322,6 @@ class MeasurementView(ModuleView):
     def on_measurements_changed(self) -> None:
         """Slot for when a measurement is added."""
         logger.debug("Measurement changed.")
-
-        if len(self.module.model.measurements) == 0:
-            self.module.view._ui_form.selectionBox.setMaximum(0)
-            self.module.view._ui_form.selectionBox.setValue(0)
-        else:
-            self.module.view._ui_form.selectionBox.setMaximum(
-                len(self.module.model.measurements) - 1
-            )
 
         # Clear the measurements list
         self._ui_form.measurementsList.clear()
