@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.7 (19-06-2025)
+
+- Change to quackseq pulseprogramming framework (`093fd59dc142a870382ecf51e5539dd77321bbb1`).
+
 ## Version 0.0.6 (27-05-2024)
 
 - Added fitting functions to the measurement module (`dca1c6816f0697ca3c6827fd07a0236a3189b922`).
